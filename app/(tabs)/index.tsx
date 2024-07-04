@@ -1,11 +1,12 @@
 import React from "react";
-import { Image, StyleSheet } from "react-native";
+import { Image, StyleSheet, ScrollView, View, Text } from "react-native";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import WallpaperCard from "@/components/WallpaperCard";
 import { SliderBox } from "react-native-image-slider-box";
 import FastImage from "react-native-fast-image";
+import { LinearGradient } from "expo-linear-gradient";
 
 const cardData = [
   {
@@ -66,72 +67,112 @@ const cardData = [
 
 const HomeScreen = () => {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#fff", dark: "#222222" }}
-      headerImage={
-        <Image
-          source={require("@/assets/images/partial-react-logo.png")}
-          style={styles.reactLogo}
-        />
-      }
-    >
-      <ThemedView style={styles.header}>
-        <ThemedView style={styles.name}>
-          <ThemedText style={styles.nameText}>Welcome to</ThemedText>
-          <ThemedText style={styles.nameTextAppName}>
-            Country Balls: World War
-          </ThemedText>
+    <View style={styles.container}>
+      <View style={styles.backgroundContainer}>
+        <ScrollView style={styles.mainContent}>
+          <ThemedView style={styles.cardSlider}>
+            <SliderBox
+              images={cardData.map((item) => item.image)}
+              dotColor="rgb(234, 110, 127)"
+              inactiveDotColor="rgba(255, 255, 255, .3)"
+              autoplay
+              circleLoop
+              resizeMethod={"resize"}
+              resizeMode={"cover"}
+              ImageComponentStyle={{
+                borderRadius: 20,
+                width: "90%",
+                marginRight: 30,
+              }}
+            />
+          </ThemedView>
+          <ThemedView style={styles.cardContainer}>
+            {cardData.map((card, index) => (
+              <WallpaperCard
+                key={index}
+                title={card.title}
+                description={card.description}
+                image={card.image}
+                style={styles.card}
+              />
+            ))}
+          </ThemedView>
+        </ScrollView>
+      </View>
+
+      <LinearGradient
+        colors={[
+          "rgba(255,255,255,1)",
+          "rgba(255,255,255,1)",
+          "rgba(255,255,255,0)",
+        ]}
+        locations={[0, 0.7, 1]}
+        style={styles.overlayContainer}
+      >
+        <ThemedView style={styles.containerHeader}>
+          <ThemedView style={styles.header}>
+            <ThemedView style={styles.name}>
+              <ThemedText style={styles.nameText}>Welcome to</ThemedText>
+              <ThemedText style={styles.nameTextAppName}>
+                Country Balls: World War
+              </ThemedText>
+            </ThemedView>
+            <ThemedView style={styles.icon}>
+              <Image
+                source={{ uri: "https://i.redd.it/60la7vb17k811.jpg" }}
+                style={styles.icon}
+              />
+            </ThemedView>
+          </ThemedView>
+          <ThemedView style={styles.titleContainer}>
+            <ThemedText type="title">
+              " Spread love everywhere you go "
+            </ThemedText>
+          </ThemedView>
         </ThemedView>
-        <ThemedView style={styles.icon}>
-          <Image
-            source={{ uri: "https://i.redd.it/60la7vb17k811.jpg" }}
-            style={styles.icon}
-          />
-        </ThemedView>
-      </ThemedView>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">" Spread love everywhere you go "</ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.cardSlider}>
-        <SliderBox
-          images={cardData.map((item) => item.image)}
-          dotColor="rgb(234, 110, 127)"
-          inactiveDotColor="rgba(255, 255, 255, .3)"
-          autoplay
-          circleLoop
-          resizeMethod={"resize"}
-          resizeMode={"cover"}
-          ImageComponentStyle={{
-            borderRadius: 20,
-            width: "90%",
-            marginRight: 30,
-          }}
-        />
-      </ThemedView>
-      <ThemedView style={styles.cardContainer}>
-        {cardData.map((card, index) => (
-          <WallpaperCard
-            key={index}
-            title={card.title}
-            description={card.description}
-            image={card.image}
-            style={styles.card}
-          />
-        ))}
-      </ThemedView>
-    </ParallaxScrollView>
+      </LinearGradient>
+    </View>
+
+    // <ThemedView style={styles.container}>
+
+    // </ThemedView>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  backgroundContainer: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "white",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
+  },
+  overlayContainer: {
+    width: "100%",
+    height: 230,
+    top: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute", // Position it absolutely
+  },
+
   header: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
     alignItems: "stretch",
+    backgroundColor: "transparent",
+    height: 40,
   },
   name: {
     flex: 1,
+    backgroundColor: "transparent",
   },
   icon: {
     width: 45,
@@ -154,19 +195,20 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     fontWeight: "500",
     fontSize: 21,
-    marginLeft: 0,
     fontFamily: "Beiruti",
   },
   titleContainer: {
     marginLeft: 0,
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 40,
     marginBottom: 15,
+    backgroundColor: "transparent",
   },
   cardSlider: {
     height: 200,
     borderRadius: 20,
     marginBottom: 15,
+    backgroundColor: "transparent",
   },
   cardContainer: {
     flexDirection: "row",
@@ -174,6 +216,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     gap: 15,
     borderRadius: 20,
+    backgroundColor: "transparent",
   },
   reactLogo: {
     height: 178,
@@ -184,6 +227,19 @@ const styles = StyleSheet.create({
   },
   card: {
     marginBottom: 15,
+  },
+  // container: {
+  //   paddingTop: 40,
+  //   paddingHorizontal: 10,
+  //   backgroundColor: "transparent",
+  // },
+  containerHeader: {
+    backgroundColor: "transparent",
+    paddingTop: 40,
+    paddingHorizontal: 10,
+  },
+  mainContent: {
+    paddingTop: 220,
   },
 });
 
