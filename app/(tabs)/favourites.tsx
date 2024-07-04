@@ -77,10 +77,7 @@ const HomeScreen = () => {
     >
       <ThemedView style={styles.header}>
         <ThemedView style={styles.name}>
-          <ThemedText style={styles.nameText}>Welcome to</ThemedText>
-          <ThemedText style={styles.nameTextAppName}>
-            Country Balls: World War
-          </ThemedText>
+          <ThemedText style={styles.nameText}>App Name</ThemedText>
         </ThemedView>
         <ThemedView style={styles.icon}>
           <Image
@@ -90,23 +87,7 @@ const HomeScreen = () => {
         </ThemedView>
       </ThemedView>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">" Spread love everywhere you go "</ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.cardSlider}>
-        <SliderBox
-          images={cardData.map((item) => item.image)}
-          dotColor="rgb(234, 110, 127)"
-          inactiveDotColor="rgba(255, 255, 255, .3)"
-          autoplay
-          circleLoop
-          resizeMethod={"resize"}
-          resizeMode={"cover"}
-          ImageComponentStyle={{
-            borderRadius: 20,
-            width: "90%",
-            marginRight: 30,
-          }}
-        />
+        <ThemedText type="title">Liked wallpapers</ThemedText>
       </ThemedView>
       <ThemedView style={styles.cardContainer}>
         {cardData.map((card, index) => (
@@ -134,46 +115,33 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   icon: {
-    width: 45,
-    height: 45,
+    width: 60,
+    height: 60,
     borderRadius: 60,
     alignSelf: "center",
   },
   nameText: {
-    color: "rgba(0, 0,0, .35)",
     textAlign: "left",
-    paddingVertical: 0,
-    fontWeight: "bold",
+    paddingVertical: 15,
+    fontWeight: "800",
     fontSize: 20,
-    marginLeft: 0,
-    fontFamily: "Beiruti",
-  },
-  nameTextAppName: {
-    color: "rgba(0, 0,0, 1)",
-    textAlign: "left",
-    paddingVertical: 0,
-    fontWeight: "500",
-    fontSize: 21,
-    marginLeft: 0,
-    fontFamily: "Beiruti",
+    marginLeft: 10,
   },
   titleContainer: {
-    marginLeft: 0,
+    marginLeft: 10,
     alignItems: "center",
-    marginTop: 10,
-    marginBottom: 15,
+    marginBottom: 16,
   },
   cardSlider: {
     height: 200,
     borderRadius: 20,
-    marginBottom: 15,
+    marginBottom: 16,
   },
   cardContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-around",
-    gap: 15,
-    borderRadius: 20,
+    borderRadius: 8,
   },
   reactLogo: {
     height: 178,
@@ -183,7 +151,7 @@ const styles = StyleSheet.create({
     left: 0,
   },
   card: {
-    marginBottom: 15,
+    marginBottom: 16,
   },
 });
 
