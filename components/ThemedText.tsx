@@ -48,6 +48,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     lineHeight: 32,
     fontFamily: "Rancho",
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 20,

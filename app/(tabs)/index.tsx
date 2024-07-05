@@ -1,5 +1,12 @@
 import React from "react";
-import { Image, StyleSheet, ScrollView, View, Text } from "react-native";
+import {
+  Image,
+  StyleSheet,
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
+} from "react-native";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -7,6 +14,8 @@ import WallpaperCard from "@/components/WallpaperCard";
 import { SliderBox } from "react-native-image-slider-box";
 import FastImage from "react-native-fast-image";
 import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation } from "expo-router";
+import { useColorScheme } from "@/hooks/useColorScheme";
 
 const cardData = [
   {
@@ -14,61 +23,65 @@ const cardData = [
     description:
       "Description for Card 1. MAHA ASK IF YOU SHOULD ADD THESE OR NOT",
     image:
-      "https://i.pinimg.com/236x/ac/63/bc/ac63bcbac43af9f8cbc2e212ad6a6209.jpg",
+      "https://i.pinimg.com/736x/04/7e/08/047e085d7da80a191c5ee1633896cc1b.jpg",
   },
   {
     title: "Card 2",
     description: "Description for Card 2",
     image:
-      "https://marketplace.canva.com/EAFW7eSaHnY/1/0/900w/canva-blue-abstract-wave-phone-wallpaper-k7iCjgKKe80.jpg",
+      "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/7439fcf5-dec7-4de4-829f-fd062c0a68d4/d6o6xi2-6bc0739d-faa1-4960-bdf4-657486559c35.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzc0MzlmY2Y1LWRlYzctNGRlNC04MjlmLWZkMDYyYzBhNjhkNFwvZDZvNnhpMi02YmMwNzM5ZC1mYWExLTQ5NjAtYmRmNC02NTc0ODY1NTljMzUuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.J3TCxCbS51iuF9TlU40GwPtR8pbXIQn3Uam-K4S6ja0",
   },
   {
     title: "Card 3",
     description: "Description for Card 1",
     image:
-      "https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTExL3Jhd3BpeGVsX29mZmljZV8yNl9pbGx1c3RyYXRpb25fYXVyb3JhX2dyZWVuX3dpdGhfc3BhcmtsZV9sYW5kc181YjA0NzRiZi0zM2Q1LTQ5MWItODBlZi1kMWExMWFjOWVjYjFfMS5qcGc.jpg",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUelavUAczUbvzA1zQnN2EUo3XSmhNwEEeDw&s",
   },
   {
     title: "Card 4",
     description: "Description for Card 2",
     image:
-      "https://www.idownloadblog.com/wp-content/uploads/2023/06/iOS-17-Light-by-@iSWUpdates.png",
+      "https://is.zobj.net/image-server/v1/images?r=-WREyAY8zId8CktIrkpSnanqG3lkqjp2L7RjRidarpIRBZ-y9nZvnnpCustYStE7lg9T_fSEhiu0TwJF2KLlawkyqatN5EIRymxEHht4O4a_l0wLQjtHDUgAYGtzaFyX7NYcomE1Lkw_rtX-Sd9mCc586N_64nQXWXSnyDTSJfI9DJN7q44mVzpTSrGhbf9ogBS435ztV7DZhehNBGB8AgSCPYBIzv2B6zaBhQ",
   },
   {
     title: "Card 5",
     description: "Description for Card 1",
-    image: "https://m.media-amazon.com/images/I/51PnqpTp6ML.jpg",
+    image:
+      "https://e1.pxfuel.com/desktop-wallpaper/390/618/desktop-wallpaper-rayman-iphone-rayman-origins.jpg",
   },
   {
     title: "Card 6",
     description: "Description for Card 2",
     image:
-      "https://i.pinimg.com/236x/c8/00/45/c800451e3ef64f9bdf8a86a6f9c26e96.jpg",
+      "https://i.pinimg.com/originals/7e/ef/fe/7eeffe5e51e6ed327f1a9dd4705f616b.jpg",
   },
   {
     title: "Card 7",
     description: "Description for Card 2",
     image:
-      "https://cdn.vox-cdn.com/uploads/chorus_asset/file/22963726/The_Verge_Wallpaper_Pixel_6_Pro.jpg",
-  },
-  {
-    title: "Card 8",
-    description: "Description for Card 1",
-    image:
-      "https://lalweb.blob.core.windows.net/public/lakers/product-marketing/web/wallpapers/generic/2324_lal_generic_wallpapers_2048x2732_op1_pa.jpg",
-  },
-  {
-    title: "Card 9",
-    description: "Description for Card 2",
-    image:
-      "https://images.unsplash.com/photo-1570199764549-6ca1f8f6289c?fm=jpg&w=3000&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxleHBsb3JlLWZlZWR8MXx8fGVufDB8fHx8fA%3D%3D",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdIovfe7JC1WmR4_Ek7qV5nYbIbkt3Nt3sqA&s",
   },
 ];
 
 const HomeScreen = () => {
+  const colorScheme = useColorScheme();
+  const color = colorScheme === "dark" ? "dark" : "light";
+  const gradientColors =
+    colorScheme === "dark"
+      ? ["rgba(0,0,0,1)", "rgba(0,0,0,1)", "rgba(0,0,0,0)"]
+      : ["rgba(255,255,255,1)", "rgba(255,255,255,1)", "rgba(255,255,255,0)"];
+  const text =
+    colorScheme === "dark" ? "rgba(255, 255, 255, .35)" : "rgba(0, 0, 0, .35)";
+  const nameText =
+    colorScheme === "dark" ? "rgba(255, 255, 255, 1)" : "rgba(0, 0, 0, 1)";
+
+  const navigation = useNavigation();
+
   return (
-    <View style={styles.container}>
-      <View style={styles.backgroundContainer}>
+    <ThemedView style={styles.container}>
+      <ThemedView
+        style={[styles.backgroundContainer, { backgroundColor: color }]}
+      >
         <ScrollView style={styles.mainContent}>
           <ThemedView style={styles.cardSlider}>
             <SliderBox
@@ -81,39 +94,40 @@ const HomeScreen = () => {
               resizeMode={"cover"}
               ImageComponentStyle={{
                 borderRadius: 20,
-                width: "90%",
-                marginRight: 30,
+                width: "95%",
               }}
             />
           </ThemedView>
           <ThemedView style={styles.cardContainer}>
             {cardData.map((card, index) => (
-              <WallpaperCard
-                key={index}
-                title={card.title}
-                description={card.description}
-                image={card.image}
-                style={styles.card}
-              />
+              <TouchableOpacity
+                onPress={() => navigation.navigate("wallpaperDetails")}
+              >
+                <WallpaperCard
+                  key={index}
+                  title={card.title}
+                  description={card.description}
+                  image={card.image}
+                  style={styles.card}
+                />
+              </TouchableOpacity>
             ))}
           </ThemedView>
         </ScrollView>
-      </View>
+      </ThemedView>
 
       <LinearGradient
-        colors={[
-          "rgba(255,255,255,1)",
-          "rgba(255,255,255,1)",
-          "rgba(255,255,255,0)",
-        ]}
+        colors={gradientColors}
         locations={[0, 0.7, 1]}
         style={styles.overlayContainer}
       >
         <ThemedView style={styles.containerHeader}>
           <ThemedView style={styles.header}>
             <ThemedView style={styles.name}>
-              <ThemedText style={styles.nameText}>Welcome to</ThemedText>
-              <ThemedText style={styles.nameTextAppName}>
+              <ThemedText style={[styles.nameText, { color: text }]}>
+                Welcome to
+              </ThemedText>
+              <ThemedText style={[styles.nameTextAppName, { color: nameText }]}>
                 Country Balls: World War
               </ThemedText>
             </ThemedView>
@@ -131,11 +145,7 @@ const HomeScreen = () => {
           </ThemedView>
         </ThemedView>
       </LinearGradient>
-    </View>
-
-    // <ThemedView style={styles.container}>
-
-    // </ThemedView>
+    </ThemedView>
   );
 };
 
@@ -159,10 +169,10 @@ const styles = StyleSheet.create({
     top: 0,
     justifyContent: "center",
     alignItems: "center",
-    position: "absolute", // Position it absolutely
+    position: "absolute",
   },
-
   header: {
+    width: "100%",
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
@@ -181,7 +191,6 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   nameText: {
-    color: "rgba(0, 0,0, .35)",
     textAlign: "left",
     paddingVertical: 0,
     fontWeight: "bold",
@@ -190,7 +199,6 @@ const styles = StyleSheet.create({
     fontFamily: "Beiruti",
   },
   nameTextAppName: {
-    color: "rgba(0, 0,0, 1)",
     textAlign: "left",
     paddingVertical: 0,
     fontWeight: "500",
@@ -218,21 +226,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "transparent",
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-  },
   card: {
     marginBottom: 15,
   },
-  // container: {
-  //   paddingTop: 40,
-  //   paddingHorizontal: 10,
-  //   backgroundColor: "transparent",
-  // },
   containerHeader: {
     backgroundColor: "transparent",
     paddingTop: 40,

@@ -39,10 +39,6 @@ const WallpaperCard: React.FC<WallpaperCardProps> = ({
   return (
     <ThemedView style={[styles.card, shadowStyle]}>
       <Image source={{ uri: image }} style={styles.cardImage} />
-      {/* <ThemedView style={styles.cardContent}>
-        <ThemedText style={styles.cardTitle}>{title}</ThemedText>
-        <ThemedText style={styles.cardDescription}>{description}</ThemedText>
-      </ThemedView> */}
       <Image
         source={{
           uri: "https://img.icons8.com/?size=30&id=uEbdWKPIV0xF&format=png&color=000000",
@@ -79,7 +75,6 @@ const styles = StyleSheet.create({
     color: "#555555",
     lineHeight: 16,
   },
-
   likeButton: {
     position: "absolute",
     top: 10,

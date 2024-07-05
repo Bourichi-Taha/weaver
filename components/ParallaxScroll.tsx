@@ -6,23 +6,26 @@ import Animated, {
   useAnimatedStyle,
   useScrollViewOffset,
 } from "react-native-reanimated";
+import { BlurView } from "expo-blur";
 
 import { ThemedView } from "@/components/ThemedView";
 
-const HEADER_HEIGHT = 120;
+const HEADER_HEIGHT = 500;
 
 type Props = PropsWithChildren<{
   headerImage: ReactElement;
   headerBackgroundColor: { dark: string; light: string };
 }>;
 
-export default function ParallaxScrollView({
+export default function ParallaxScroll({
   children,
+  headerImage,
   headerBackgroundColor,
 }: Props) {
   const colorScheme = useColorScheme() ?? "light";
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
+  const blurTint = colorScheme === "dark" ? "dark" : "light";
 
   const headerAnimatedStyle = useAnimatedStyle(() => {
     return {
@@ -47,16 +50,20 @@ export default function ParallaxScrollView({
 
   return (
     <ThemedView style={styles.container}>
-      <Animated.ScrollView ref={scrollRef} scrollEventThrottle={15}>
-        <Animated.View
-          style={[
-            styles.header,
-            { backgroundColor: headerBackgroundColor[colorScheme] },
-            headerAnimatedStyle,
-          ]}
-        ></Animated.View>
-        <ThemedView style={styles.content}>{children}</ThemedView>
-      </Animated.ScrollView>
+      <BlurView tint={blurTint} intensity={100} style={styles.blurContainer}>
+        <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16}>
+          <Animated.View
+            style={[
+              styles.header,
+              { backgroundColor: headerBackgroundColor[colorScheme] },
+              headerAnimatedStyle,
+            ]}
+          >
+            {headerImage}
+          </Animated.View>
+          <ThemedView style={styles.content}>{children}</ThemedView>
+        </Animated.ScrollView>
+      </BlurView>
     </ThemedView>
   );
 }
@@ -66,15 +73,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    height: 50,
+    height: 700,
     overflow: "hidden",
   },
   content: {
     flex: 1,
-    padding: 5,
-    marginHorizontal: 10,
-    gap: 15,
-    overflow: "hidden",
-    paddingBottom: 80,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 20,
+    backgroundColor: "pink",
+  },
+  blurContainer: {
+    flex: 1,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 20,
+    backgroundColor: "green",
+    height: 900,
   },
 });

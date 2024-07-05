@@ -13,30 +13,31 @@ const cardData = [
     description:
       "Description for Card 1. MAHA ASK IF YOU SHOULD ADD THESE OR NOT",
     image:
-      "https://i.pinimg.com/236x/ac/63/bc/ac63bcbac43af9f8cbc2e212ad6a6209.jpg",
+      "https://i.pinimg.com/736x/04/7e/08/047e085d7da80a191c5ee1633896cc1b.jpg",
   },
   {
     title: "Card 2",
     description: "Description for Card 2",
     image:
-      "https://marketplace.canva.com/EAFW7eSaHnY/1/0/900w/canva-blue-abstract-wave-phone-wallpaper-k7iCjgKKe80.jpg",
+      "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/7439fcf5-dec7-4de4-829f-fd062c0a68d4/d6o6xi2-6bc0739d-faa1-4960-bdf4-657486559c35.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzc0MzlmY2Y1LWRlYzctNGRlNC04MjlmLWZkMDYyYzBhNjhkNFwvZDZvNnhpMi02YmMwNzM5ZC1mYWExLTQ5NjAtYmRmNC02NTc0ODY1NTljMzUuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.J3TCxCbS51iuF9TlU40GwPtR8pbXIQn3Uam-K4S6ja0",
   },
   {
     title: "Card 3",
     description: "Description for Card 1",
     image:
-      "https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTExL3Jhd3BpeGVsX29mZmljZV8yNl9pbGx1c3RyYXRpb25fYXVyb3JhX2dyZWVuX3dpdGhfc3BhcmtsZV9sYW5kc181YjA0NzRiZi0zM2Q1LTQ5MWItODBlZi1kMWExMWFjOWVjYjFfMS5qcGc.jpg",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUelavUAczUbvzA1zQnN2EUo3XSmhNwEEeDw&s",
   },
   {
     title: "Card 4",
     description: "Description for Card 2",
     image:
-      "https://www.idownloadblog.com/wp-content/uploads/2023/06/iOS-17-Light-by-@iSWUpdates.png",
+      "https://is.zobj.net/image-server/v1/images?r=-WREyAY8zId8CktIrkpSnanqG3lkqjp2L7RjRidarpIRBZ-y9nZvnnpCustYStE7lg9T_fSEhiu0TwJF2KLlawkyqatN5EIRymxEHht4O4a_l0wLQjtHDUgAYGtzaFyX7NYcomE1Lkw_rtX-Sd9mCc586N_64nQXWXSnyDTSJfI9DJN7q44mVzpTSrGhbf9ogBS435ztV7DZhehNBGB8AgSCPYBIzv2B6zaBhQ",
   },
   {
     title: "Card 5",
     description: "Description for Card 1",
-    image: "https://m.media-amazon.com/images/I/51PnqpTp6ML.jpg",
+    image:
+      "https://e1.pxfuel.com/desktop-wallpaper/390/618/desktop-wallpaper-rayman-iphone-rayman-origins.jpg",
   },
   {
     title: "Card 6",

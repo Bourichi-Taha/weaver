@@ -6,7 +6,8 @@
       "@/*": ["./*"],
       "react-native-image-slider-box": [
         "./types/react-native-image-slider-box.d.ts"
-      ]
+      ],
+      "@gorhom/bottom-sheet": ["./node_modules/@gorhom/bottom-sheet"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
