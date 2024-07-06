@@ -1,29 +1,72 @@
 import {
   Image,
   StyleSheet,
-  Platform,
   TouchableOpacity,
   Linking,
+  Platform,
+  Text,
+  TextInput,
+  Share,
 } from "react-native";
-import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import React, { useRef, useCallback, useMemo } from "react";
+import React, { useRef, useCallback, useMemo, useState } from "react";
+import Rate, { IConfig, AndroidMarket } from "react-native-rate";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import {
+  BottomSheetModal,
+  BottomSheetView,
+  BottomSheetModalProvider,
+  BottomSheetTextInput,
+} from "@gorhom/bottom-sheet";
 
 export default function HomeScreen() {
-  const bottomSheetRef = useRef<BottomSheet>(null);
+  const rateModalRef = useRef<BottomSheetModal>(null);
+  const contactModalRef = useRef<BottomSheetModal>(null);
+  const aboutModalRef = useRef<BottomSheetModal>(null);
+  const termsModalRef = useRef<BottomSheetModal>(null);
+  const privacyModalRef = useRef<BottomSheetModal>(null);
+
+  const snapPoints = useMemo(() => ["25%", "50%"], []);
+  const snapPointsSecond = useMemo(() => ["18%", "55%"], []);
+  const snapPointsThird = useMemo(() => ["50%", "90%"], []);
+  const snapPointsFourth = useMemo(() => ["50%", "90%"], []);
+  const snapPointsFifth = useMemo(() => ["50%", "90%"], []);
+
   const colorScheme = useColorScheme();
   const color = colorScheme === "dark" ? "white" : "black";
+  const themedSheetColor = colorScheme === "dark" ? "#232323" : "white";
+  const themedHandleStyle = colorScheme === "dark" ? "#474747" : "#404040";
+  const themedCursorStyle = colorScheme === "dark" ? "#474747" : "#404040";
 
-  const snapPoints = useMemo(() => ["25%", "50%", "90%"], []);
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [body, setBody] = useState("");
 
+  const handleRateStart = useCallback(() => {
+    rateModalRef.current?.present();
+  }, []);
+
+  const handleContactStart = useCallback(() => {
+    contactModalRef.current?.present();
+  }, []);
+
+  const handleAboutStart = useCallback(() => {
+    aboutModalRef.current?.present();
+  }, []);
+
+  const handleTermsStart = useCallback(() => {
+    termsModalRef.current?.present();
+  }, []);
+
+  const handlePrivacyStart = useCallback(() => {
+    privacyModalRef.current?.present();
+  }, []);
   const handleSheetChanges = useCallback((index: number) => {
     console.log("handleSheetChanges", index);
   }, []);
@@ -33,6 +76,64 @@ export default function HomeScreen() {
     Linking.openURL(url).catch((err) =>
       console.error("Couldn't load page", err)
     );
+  };
+
+  const shareApp = () => {
+    const storeUrl =
+      Platform.OS === "ios"
+        ? "https://apps.apple.com/app/instagram/id389801252"
+        : "market://details?id=com.instagram.android";
+
+    const message = `${storeUrl}`;
+
+    Share.share({
+      message: message,
+    })
+      .then((result) => console.log(result))
+      .catch((error) => console.error(error));
+  };
+
+  const handleFeedbackPress = async () => {
+    const storeUrl =
+      Platform.OS === "ios"
+        ? "https://apps.apple.com/app/instagram/id389801252"
+        : "market://details?id=com.instagram.android";
+
+    try {
+      await Linking.openURL(storeUrl);
+    } catch (error) {
+      console.error("Failed to open store:", error);
+    }
+  };
+
+  const handleRatePress = () => {
+    const options = {
+      GooglePackageName: "com.instagram.android",
+      AppleAppID: "389801252",
+      preferInApp: true,
+      openAppStoreIfInAppFails: true,
+      fallbackPlatformURL: "https://instagram.com",
+    };
+
+    Rate.rate(options, (success, error) => {
+      if (success) {
+        console.log("Rating submitted");
+      } else {
+        console.error("Failed to open store:", error);
+      }
+    });
+  };
+
+  const handleSubmit = () => {
+    const email = "mobtwinteam@info.com";
+    const subject = "Feedback or Review Submission";
+    const body = "Here is my feedback/review...";
+
+    const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+
+    Linking.openURL(mailtoLink);
   };
 
   return (
@@ -88,7 +189,10 @@ export default function HomeScreen() {
 
         <ThemedView style={styles.section}>
           <ThemedText style={styles.sectionTitle}>Support us</ThemedText>
-          <TouchableOpacity style={styles.sectionItem}>
+          <TouchableOpacity
+            style={styles.sectionItem}
+            onPress={handleRateStart}
+          >
             <Image
               source={{
                 uri: "https://img.icons8.com/?size=100&id=WJRf67QgKO2k&format=png&color=000000",
@@ -99,19 +203,10 @@ export default function HomeScreen() {
               Rate Us
             </ThemedText>
           </TouchableOpacity>
-          <BottomSheet
-            index={-1}
-            snapPoints={snapPoints}
-            detached={true}
-            enableOverDrag={true}
-            enablePanDownToClose={true}
-            enableDynamicSizing={true}
+          <TouchableOpacity
+            style={styles.sectionItem}
+            onPress={handleContactStart}
           >
-            <BottomSheetView style={styles.contentContainer}>
-              <ThemedText>Awesome 🎉</ThemedText>
-            </BottomSheetView>
-          </BottomSheet>
-          <TouchableOpacity style={styles.sectionItem}>
             <Image
               source={{
                 uri: "https://img.icons8.com/?size=100&id=QqtDTGEho4jP&format=png&color=000000",
@@ -122,7 +217,7 @@ export default function HomeScreen() {
               Contact Us
             </ThemedText>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.sectionItem}>
+          <TouchableOpacity style={styles.sectionItem} onPress={shareApp}>
             <Image
               source={{
                 uri: "https://img.icons8.com/?size=100&id=JanHgvvWv0rK&format=png&color=000000",
@@ -136,7 +231,10 @@ export default function HomeScreen() {
         </ThemedView>
         <ThemedView style={styles.section}>
           <ThemedText style={styles.sectionTitle}>About</ThemedText>
-          <TouchableOpacity style={styles.sectionItem}>
+          <TouchableOpacity
+            style={styles.sectionItem}
+            onPress={handleAboutStart}
+          >
             <Image
               source={{
                 uri: "https://img.icons8.com/?size=100&id=GmcSXvmvXrd7&format=png&color=000000",
@@ -147,7 +245,10 @@ export default function HomeScreen() {
               About us
             </ThemedText>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.sectionItem}>
+          <TouchableOpacity
+            style={styles.sectionItem}
+            onPress={handleTermsStart}
+          >
             <Image
               source={{
                 uri: "https://img.icons8.com/?size=100&id=eShmRfVzlvgL&format=png&color=000000",
@@ -158,7 +259,10 @@ export default function HomeScreen() {
               Terms of Use
             </ThemedText>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.sectionItem}>
+          <TouchableOpacity
+            style={styles.sectionItem}
+            onPress={handlePrivacyStart}
+          >
             <Image
               source={{
                 uri: "https://img.icons8.com/?size=100&id=r2Vh0YFzweoF&format=png&color=000000",
@@ -203,6 +307,194 @@ export default function HomeScreen() {
           </ThemedView>
         </ThemedView>
       </ParallaxScrollView>
+
+      <BottomSheetModalProvider>
+        <BottomSheetModal
+          ref={rateModalRef}
+          index={1}
+          snapPoints={snapPoints}
+          onChange={handleSheetChanges}
+          backgroundStyle={{ backgroundColor: themedSheetColor }}
+          handleIndicatorStyle={{ backgroundColor: themedHandleStyle }}
+        >
+          <BottomSheetView
+            style={[
+              styles.contentContainer,
+              { backgroundColor: themedSheetColor },
+            ]}
+          >
+            <ThemedText style={styles.titleText}>Enjoying Mobtwin?</ThemedText>
+            <ThemedText style={styles.subTitleText}>
+              Help us expand and improve!
+            </ThemedText>
+            <ThemedText style={styles.cuteText}>
+              Spread your love for the app.
+            </ThemedText>
+            <ThemedText style={styles.cuteText}>
+              Guide others to discover it by leaving a review!
+            </ThemedText>
+            <ThemedView style={styles.buttonsContainer}>
+              <TouchableOpacity
+                style={styles.optionButton}
+                onPress={handleFeedbackPress}
+              >
+                <LinearGradient
+                  colors={["#FE6292", "#E57373"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.optionButton}
+                >
+                  <Image
+                    source={{
+                      uri: "https://img.icons8.com/?size=100&id=c5GEXJDYBcbX&format=png&color=000000",
+                    }}
+                    style={{
+                      width: 45,
+                      height: 45,
+                      tintColor: "white",
+                    }}
+                  />
+                  <Text style={styles.buttonText}>Send feedback</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.optionButton}
+                onPress={handleRatePress}
+              >
+                <LinearGradient
+                  colors={["#FE6292", "#E57373"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.optionButton}
+                >
+                  <Image
+                    source={{
+                      uri: "https://img.icons8.com/?size=100&id=WJRf67QgKO2k&format=png&color=000000",
+                    }}
+                    style={{
+                      width: 45,
+                      height: 45,
+                      tintColor: "white",
+                    }}
+                  />
+                  <Text style={styles.buttonText}>5 Stars Rate</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </ThemedView>
+          </BottomSheetView>
+        </BottomSheetModal>
+
+        <BottomSheetModal
+          ref={contactModalRef}
+          index={1}
+          snapPoints={snapPointsSecond}
+          onChange={handleSheetChanges}
+          backgroundStyle={{ backgroundColor: themedSheetColor }}
+          handleIndicatorStyle={{ backgroundColor: themedHandleStyle }}
+          keyboardBehavior="interactive"
+        >
+          <BottomSheetView
+            style={[
+              styles.contentContainer,
+              { backgroundColor: themedSheetColor },
+            ]}
+          >
+            <ThemedText style={styles.feedbackText}>
+              Give your opinion
+            </ThemedText>
+            <BottomSheetTextInput
+              style={styles.input}
+              placeholder="Your Email"
+              keyboardType="email-address"
+              autoComplete="email"
+              cursorColor={themedCursorStyle}
+              onChangeText={(text) => setEmail(text)}
+              inputMode="email"
+            />
+            <BottomSheetTextInput
+              style={styles.input}
+              placeholder="Subject"
+              maxLength={30}
+              onChangeText={(text) => setSubject(text)}
+              inputMode="text"
+            />
+            <BottomSheetTextInput
+              style={styles.bodyInput}
+              placeholder="Type here..."
+              multiline={true}
+              onChangeText={(text) => setBody(text)}
+              inputMode="text"
+            />
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleSubmit}
+            >
+              <LinearGradient
+                colors={["#FE6292", "#E57373"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.submitButton}
+              >
+                <ThemedText style={styles.submitText}>Submit</ThemedText>
+              </LinearGradient>
+            </TouchableOpacity>
+          </BottomSheetView>
+        </BottomSheetModal>
+
+        <BottomSheetModal
+          ref={aboutModalRef}
+          index={1}
+          snapPoints={snapPointsThird}
+          onChange={handleSheetChanges}
+          backgroundStyle={{ backgroundColor: themedSheetColor }}
+          handleIndicatorStyle={{ backgroundColor: themedHandleStyle }}
+        >
+          <BottomSheetView
+            style={[
+              styles.contentContainer,
+              { backgroundColor: themedSheetColor },
+            ]}
+          >
+            <ThemedText style={styles.titleText}>About Mobtwin</ThemedText>
+          </BottomSheetView>
+        </BottomSheetModal>
+
+        <BottomSheetModal
+          ref={termsModalRef}
+          index={1}
+          snapPoints={snapPointsFourth}
+          onChange={handleSheetChanges}
+          backgroundStyle={{ backgroundColor: themedSheetColor }}
+          handleIndicatorStyle={{ backgroundColor: themedHandleStyle }}
+        >
+          <BottomSheetView
+            style={[
+              styles.contentContainer,
+              { backgroundColor: themedSheetColor },
+            ]}
+          >
+            <ThemedText style={styles.titleText}>Terms of Use</ThemedText>
+          </BottomSheetView>
+        </BottomSheetModal>
+
+        <BottomSheetModal
+          ref={privacyModalRef}
+          index={1}
+          snapPoints={snapPointsFifth}
+          onChange={handleSheetChanges}
+          backgroundStyle={{ backgroundColor: themedSheetColor }}
+          handleIndicatorStyle={{ backgroundColor: themedHandleStyle }}
+        >
+          <BottomSheetView
+            style={[
+              styles.contentContainer,
+              { backgroundColor: themedSheetColor },
+            ]}
+          >
+            <ThemedText style={styles.titleText}>Privacy Policy</ThemedText>
+          </BottomSheetView>
+        </BottomSheetModal>
+      </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
 }
@@ -355,5 +647,88 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     alignItems: "center",
+  },
+  titleText: {
+    fontSize: 22,
+    marginTop: 12,
+    textAlign: "center",
+    fontWeight: "800",
+  },
+  subTitleText: {
+    fontSize: 20,
+    marginTop: 12,
+    marginBottom: 12,
+    textAlign: "center",
+    fontWeight: "800",
+  },
+  cuteText: {
+    fontSize: 16,
+    textAlign: "center",
+  },
+  buttonsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+    width: "100%",
+    position: "absolute",
+    bottom: 120,
+    alignContent: "center",
+    backgroundColor: "transparent",
+    paddingHorizontal: 5,
+  },
+  optionButton: {
+    backgroundColor: "transparent",
+    borderRadius: 25,
+    width: "60%",
+    height: 100,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 20,
+  },
+  buttonText: {
+    textAlign: "center",
+    marginTop: 10,
+    fontWeight: "bold",
+    color: "white",
+  },
+  feedbackText: {
+    fontSize: 22,
+    marginTop: 10,
+    marginBottom: 20,
+    textAlign: "center",
+    fontWeight: "800",
+  },
+  input: {
+    width: "80%",
+    height: 40,
+    borderColor: "gray",
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+    borderRadius: 10,
+  },
+  bodyInput: {
+    width: "80%",
+    height: 120,
+    borderColor: "gray",
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+    borderRadius: 10,
+  },
+  submitButton: {
+    marginTop: 10,
+    backgroundColor: "transparent",
+    borderRadius: 25,
+    width: "60%",
+    height: 50,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  submitText: {
+    textAlign: "center",
+    fontWeight: "bold",
+    color: "white",
+    justifyContent: "center",
   },
 });
