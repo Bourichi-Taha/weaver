@@ -101,10 +101,12 @@ const HomeScreen = () => {
           <ThemedView style={styles.cardContainer}>
             {cardData.map((card, index) => (
               <TouchableOpacity
-                onPress={() => navigation.navigate("wallpaperDetails")}
+                key={index}
+                onPress={() =>
+                  navigation.navigate("wallpaperDetails", { card })
+                }
               >
                 <WallpaperCard
-                  key={index}
                   title={card.title}
                   description={card.description}
                   image={card.image}

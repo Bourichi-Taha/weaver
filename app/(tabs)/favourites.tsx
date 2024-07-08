@@ -1,11 +1,21 @@
 import React from "react";
-import { Image, StyleSheet } from "react-native";
+import {
+  Image,
+  StyleSheet,
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
+} from "react-native";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import WallpaperCard from "@/components/WallpaperCard";
 import { SliderBox } from "react-native-image-slider-box";
 import FastImage from "react-native-fast-image";
+import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation } from "expo-router";
+import { useColorScheme } from "@/hooks/useColorScheme";
 
 const cardData = [
   {
@@ -43,116 +53,174 @@ const cardData = [
     title: "Card 6",
     description: "Description for Card 2",
     image:
-      "https://i.pinimg.com/236x/c8/00/45/c800451e3ef64f9bdf8a86a6f9c26e96.jpg",
+      "https://i.pinimg.com/originals/7e/ef/fe/7eeffe5e51e6ed327f1a9dd4705f616b.jpg",
   },
   {
     title: "Card 7",
     description: "Description for Card 2",
     image:
-      "https://cdn.vox-cdn.com/uploads/chorus_asset/file/22963726/The_Verge_Wallpaper_Pixel_6_Pro.jpg",
-  },
-  {
-    title: "Card 8",
-    description: "Description for Card 1",
-    image:
-      "https://lalweb.blob.core.windows.net/public/lakers/product-marketing/web/wallpapers/generic/2324_lal_generic_wallpapers_2048x2732_op1_pa.jpg",
-  },
-  {
-    title: "Card 9",
-    description: "Description for Card 2",
-    image:
-      "https://images.unsplash.com/photo-1570199764549-6ca1f8f6289c?fm=jpg&w=3000&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxleHBsb3JlLWZlZWR8MXx8fGVufDB8fHx8fA%3D%3D",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdIovfe7JC1WmR4_Ek7qV5nYbIbkt3Nt3sqA&s",
   },
 ];
 
 const HomeScreen = () => {
+  const colorScheme = useColorScheme();
+  const color = colorScheme === "dark" ? "dark" : "light";
+  const gradientColors =
+    colorScheme === "dark"
+      ? ["rgba(0,0,0,1)", "rgba(0,0,0,1)", "rgba(0,0,0,0)"]
+      : ["rgba(255,255,255,1)", "rgba(255,255,255,1)", "rgba(255,255,255,0)"];
+  const text =
+    colorScheme === "dark" ? "rgba(255, 255, 255, .35)" : "rgba(0, 0, 0, .35)";
+  const nameText =
+    colorScheme === "dark" ? "rgba(255, 255, 255, 1)" : "rgba(0, 0, 0, 1)";
+
+  const navigation = useNavigation();
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#fff", dark: "#222222" }}
-      headerImage={
-        <Image
-          source={require("@/assets/images/partial-react-logo.png")}
-          style={styles.reactLogo}
-        />
-      }
-    >
-      <ThemedView style={styles.header}>
-        <ThemedView style={styles.name}>
-          <ThemedText style={styles.nameText}>App Name</ThemedText>
+    <ThemedView style={styles.container}>
+      <ThemedView
+        style={[styles.backgroundContainer, { backgroundColor: color }]}
+      >
+        <ScrollView style={styles.mainContent}>
+          <ThemedView style={styles.cardContainer}>
+            {cardData.map((card, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() =>
+                  navigation.navigate("wallpaperDetails", { card })
+                }
+              >
+                <WallpaperCard
+                  title={card.title}
+                  description={card.description}
+                  image={card.image}
+                  style={styles.card}
+                />
+              </TouchableOpacity>
+            ))}
+          </ThemedView>
+        </ScrollView>
+      </ThemedView>
+
+      <LinearGradient
+        colors={gradientColors}
+        locations={[0, 0.7, 1]}
+        style={styles.overlayContainer}
+      >
+        <ThemedView style={styles.containerHeader}>
+          <ThemedView style={styles.header}>
+            <ThemedView style={styles.name}>
+              <ThemedText style={[styles.nameText, { color: text }]}>
+                Welcome to
+              </ThemedText>
+              <ThemedText style={[styles.nameTextAppName, { color: nameText }]}>
+                Country Balls: World War
+              </ThemedText>
+            </ThemedView>
+            <ThemedView style={styles.icon}>
+              <Image
+                source={{ uri: "https://i.redd.it/60la7vb17k811.jpg" }}
+                style={styles.icon}
+              />
+            </ThemedView>
+          </ThemedView>
+          <ThemedView style={styles.titleContainer}>
+            <ThemedText type="title">" Favourite wallpapers "</ThemedText>
+          </ThemedView>
         </ThemedView>
-        <ThemedView style={styles.icon}>
-          <Image
-            source={{ uri: "https://i.redd.it/60la7vb17k811.jpg" }}
-            style={styles.icon}
-          />
-        </ThemedView>
-      </ThemedView>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Liked wallpapers</ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.cardContainer}>
-        {cardData.map((card, index) => (
-          <WallpaperCard
-            key={index}
-            title={card.title}
-            description={card.description}
-            image={card.image}
-            style={styles.card}
-          />
-        ))}
-      </ThemedView>
-    </ParallaxScrollView>
+      </LinearGradient>
+    </ThemedView>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  backgroundContainer: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "white",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
+  },
+  overlayContainer: {
+    width: "100%",
+    height: 230,
+    top: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
+  },
   header: {
+    width: "100%",
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
     alignItems: "stretch",
+    backgroundColor: "transparent",
+    height: 40,
   },
   name: {
     flex: 1,
+    backgroundColor: "transparent",
   },
   icon: {
-    width: 60,
-    height: 60,
+    width: 45,
+    height: 45,
     borderRadius: 60,
     alignSelf: "center",
   },
   nameText: {
     textAlign: "left",
-    paddingVertical: 15,
-    fontWeight: "800",
+    paddingVertical: 0,
+    fontWeight: "bold",
     fontSize: 20,
-    marginLeft: 10,
+    marginLeft: 0,
+    fontFamily: "Beiruti",
+  },
+  nameTextAppName: {
+    textAlign: "left",
+    paddingVertical: 0,
+    fontWeight: "500",
+    fontSize: 21,
+    fontFamily: "Beiruti",
   },
   titleContainer: {
-    marginLeft: 10,
+    marginLeft: 0,
     alignItems: "center",
-    marginBottom: 16,
+    marginTop: 40,
+    marginBottom: 15,
+    backgroundColor: "transparent",
   },
   cardSlider: {
     height: 200,
     borderRadius: 20,
-    marginBottom: 16,
+    marginBottom: 15,
+    backgroundColor: "transparent",
   },
   cardContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-around",
-    borderRadius: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    position: "absolute",
-    bottom: 0,
-    left: 0,
+    gap: 15,
+    borderRadius: 20,
+    backgroundColor: "transparent",
   },
   card: {
-    marginBottom: 16,
+    marginBottom: 15,
+  },
+  containerHeader: {
+    backgroundColor: "transparent",
+    paddingTop: 40,
+    paddingHorizontal: 10,
+  },
+  mainContent: {
+    paddingTop: 220,
   },
 });
 

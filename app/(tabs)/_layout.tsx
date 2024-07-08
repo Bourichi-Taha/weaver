@@ -6,6 +6,7 @@ import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { BlurView } from "expo-blur";
 import { StyleSheet } from "react-native";
+import { ThemedView } from "@/components/ThemedView";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -14,7 +15,8 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarActiveTintColor: Colors[colorScheme ?? "light"].activeTint,
+        tabBarInactiveTintColor: Colors[colorScheme ?? "light"].inactiveTint,
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: [
@@ -58,58 +60,28 @@ export default function TabLayout() {
         },
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Home",
-          tabBarIcon: ({ focused }) => (
-            <TabBarIcon
-              name="home"
-              color={focused ? "#EA6E7F" : "#999999"}
-              focused={focused}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="favourites"
-        options={{
-          title: "Favourites",
-          tabBarIcon: ({ focused }) => (
-            <TabBarIcon
-              name="bookmark"
-              color={focused ? "#EA6E7F" : "#999999"}
-              focused={focused}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="categories"
-        options={{
-          title: "Categories",
-          tabBarIcon: ({ focused }) => (
-            <TabBarIcon
-              name="colorFilter"
-              color={focused ? "#EA6E7F" : "#999999"}
-              focused={focused}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          tabBarIcon: ({ focused }) => (
-            <TabBarIcon
-              name="person"
-              color={focused ? "#EA6E7F" : "#999999"}
-              focused={focused}
-            />
-          ),
-        }}
-      />
+      {["index", "favourites", "categories", "profile"].map((screen, index) => {
+        const icons = ["home", "bookmark", "colorFilter", "person"];
+        const titles = ["Home", "Favourites", "Categories", "Profile"];
+        return (
+          <Tabs.Screen
+            key={screen}
+            name={screen}
+            options={{
+              title: titles[index],
+              tabBarIcon: ({ focused }) => (
+                <ThemedView style={focused ? styles.iconContainerFocused : styles.iconContainer}>
+                  <TabBarIcon
+                    name={icons[index]}
+                    color={focused ? "#FFFFFF" : "#999999"}
+                    focused={focused}
+                  />
+                </ThemedView>
+              ),
+            }}
+          />
+        );
+      })}
     </Tabs>
   );
 }
@@ -124,6 +96,11 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: "center",
     alignItems: "center",
+    alignSelf: "center",
+    borderRadius: 25,
+    backgroundColor: "#EA6E7F",
+    padding: 15,
+    paddingBottom: 11,
   },
   iconContainer: {
     width: 50,
@@ -131,5 +108,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 5,
+    backgroundColor: "transparent",
   },
 });
