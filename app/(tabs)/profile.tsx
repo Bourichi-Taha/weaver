@@ -14,7 +14,13 @@ import { ThemedView } from "@/components/ThemedView";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 SCROLLABLE_DECELERATION_RATE_MAPPER;
-import React, { useRef, useCallback, useMemo, useState } from "react";
+import React, {
+  useRef,
+  useCallback,
+  useMemo,
+  useState,
+  useEffect,
+} from "react";
 import Rate, { IConfig, AndroidMarket } from "react-native-rate";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
@@ -28,6 +34,11 @@ import {
 } from "@gorhom/bottom-sheet";
 import WebView from "react-native-webview";
 import Constants from "expo-constants";
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function HomeScreen() {
   const rateModalRef = useRef<BottomSheetModal>(null);
@@ -51,6 +62,51 @@ export default function HomeScreen() {
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    iosClientId:
+      "146135389195-m58h1686dbmcqedagip4l17qpu4198n0.apps.googleusercontent.com",
+    androidClientId:
+      "146135389195-as37vq11murmf986p54t8er3kh3hpfv4.apps.googleusercontent.com",
+    webClientId:
+      "146135389195-qtphvosnanndgi3ukn8n9haslpbd4d9t.apps.googleusercontent.com",
+    scopes: ["profile", "email"],
+  });
+
+  const [userInfo, setUserInfo] = useState(null);
+
+  useEffect(() => {
+    handleSignInWithGoogle();
+  }, [response]);
+
+  async function handleSignInWithGoogle() {
+    const user = await AsyncStorage.getItem("@user");
+    if (!user) {
+      if (response?.type === "success") {
+        await getUserInfo(response.authentication?.accessToken);
+      }
+    } else {
+      setUserInfo(JSON.parse(user));
+    }
+  }
+
+  const getUserInfo = async (token) => {
+    if (!token) return;
+    try {
+      const response = await fetch(
+        "https://www.googleapis.com/userinfo/v2/me",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const user = await response.json();
+      await AsyncStorage.setItem("@user", JSON.stringify(user));
+      setUserInfo(user);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleRateStart = useCallback(() => {
     rateModalRef.current?.present();
@@ -171,9 +227,7 @@ export default function HomeScreen() {
               }}
             />
           </ThemedView>
-          <TouchableOpacity
-            onPress={() => console.log("Sign in button pressed")}
-          >
+          <TouchableOpacity disabled={!request} onPress={() => promptAsync()}>
             <ThemedView style={styles.googleButton}>
               <BlurView intensity={50} style={styles.blurContainer}>
                 <LinearGradient

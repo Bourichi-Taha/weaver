@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { View, StyleSheet, Dimensions } from "react-native";
 import LottieView from "lottie-react-native";
 import * as SplashScreen from "expo-splash-screen";
@@ -9,13 +9,11 @@ const windowWidth = Dimensions.get("window").width;
 
 SplashScreen.preventAutoHideAsync();
 
-export default function SplashScreenComponent() {
-  useEffect(() => {
-    const hideSplashScreen = async () => {
-      await SplashScreen.hideAsync();
-    };
+export default function SplashScreenComponent({ onAnimationFinish }) {
+  const animationRef = useRef(null);
 
-    setTimeout(hideSplashScreen, 3000);
+  useEffect(() => {
+    animationRef.current?.play();
   }, []);
 
   return (
@@ -24,6 +22,7 @@ export default function SplashScreenComponent() {
         source={require("../assets/Splash/Animation - 1720256419149.json")}
         autoPlay
         loop
+        onAnimationFinish={onAnimationFinish}
         style={styles.animation}
       />
     </ThemedView>

@@ -1,21 +1,12 @@
-import React from "react";
-import {
-  Image,
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  TouchableOpacity,
-} from "react-native";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
+import React, { useEffect, useState } from "react";
+import { Image, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import WallpaperCard from "@/components/WallpaperCard";
-import { SliderBox } from "react-native-image-slider-box";
-import FastImage from "react-native-fast-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "expo-router";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const cardData = [
   {
@@ -64,6 +55,7 @@ const cardData = [
 ];
 
 const HomeScreen = () => {
+  const [favouriteWallpapers, setFavouriteWallpapers] = useState([]);
   const colorScheme = useColorScheme();
   const color = colorScheme === "dark" ? "dark" : "light";
   const gradientColors =
@@ -77,32 +69,58 @@ const HomeScreen = () => {
 
   const navigation = useNavigation();
 
+  useEffect(() => {
+    const fetchFavourites = async () => {
+      try {
+        const favourites = await AsyncStorage.getItem("@userFavourites");
+        if (favourites !== null) {
+          setFavouriteWallpapers(JSON.parse(favourites));
+        }
+      } catch (error) {
+        console.error("Error retrieving favourites:", error);
+      }
+    };
+    fetchFavourites();
+  }, []);
+
   return (
     <ThemedView style={styles.container}>
-      <ThemedView
-        style={[styles.backgroundContainer, { backgroundColor: color }]}
-      >
-        <ScrollView style={styles.mainContent}>
-          <ThemedView style={styles.cardContainer}>
-            {cardData.map((card, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() =>
-                  navigation.navigate("wallpaperDetails", { card })
-                }
-              >
-                <WallpaperCard
-                  title={card.title}
-                  description={card.description}
-                  image={card.image}
-                  style={styles.card}
-                />
-              </TouchableOpacity>
-            ))}
-          </ThemedView>
-        </ScrollView>
-      </ThemedView>
-
+      {favouriteWallpapers.length === 0 ? (
+        <ThemedView
+          style={[styles.backgroundContainer, { backgroundColor: color }]}
+        >
+          <ThemedText>
+            No wallpaper was set to favourite. Discover more
+          </ThemedText>
+          <TouchableOpacity onPress={() => navigation.navigate("index")}>
+            Here
+          </TouchableOpacity>
+        </ThemedView>
+      ) : (
+        <ThemedView
+          style={[styles.backgroundContainer, { backgroundColor: color }]}
+        >
+          <ScrollView style={styles.mainContent}>
+            <ThemedView style={styles.cardContainer}>
+              {cardData.map((card, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() =>
+                    navigation.navigate("wallpaperDetails", { card })
+                  }
+                >
+                  <WallpaperCard
+                    title={card.title}
+                    description={card.description}
+                    image={card.image}
+                    style={styles.card}
+                  />
+                </TouchableOpacity>
+              ))}
+            </ThemedView>
+          </ScrollView>
+        </ThemedView>
+      )}
       <LinearGradient
         colors={gradientColors}
         locations={[0, 0.7, 1]}
