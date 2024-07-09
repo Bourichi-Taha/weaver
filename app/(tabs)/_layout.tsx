@@ -70,7 +70,11 @@ export default function TabLayout() {
             options={{
               title: titles[index],
               tabBarIcon: ({ focused }) => (
-                <ThemedView style={focused ? styles.iconContainerFocused : styles.iconContainer}>
+                <ThemedView
+                  style={
+                    focused ? styles.iconContainerFocused : styles.iconContainer
+                  }
+                >
                   <TabBarIcon
                     name={icons[index]}
                     color={focused ? "#FFFFFF" : "#999999"}
@@ -92,22 +96,19 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   iconContainerFocused: {
-    width: 50,
-    height: 50,
+    width: 70,
+    height: 45,
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "center",
     borderRadius: 25,
     backgroundColor: "#EA6E7F",
-    padding: 15,
-    paddingBottom: 11,
   },
   iconContainer: {
-    width: 50,
-    height: 50,
+    width: 70,
+    height: 45,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 5,
     backgroundColor: "transparent",
   },
 });

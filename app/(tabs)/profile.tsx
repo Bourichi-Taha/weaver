@@ -13,7 +13,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-
+SCROLLABLE_DECELERATION_RATE_MAPPER;
 import React, { useRef, useCallback, useMemo, useState } from "react";
 import Rate, { IConfig, AndroidMarket } from "react-native-rate";
 import { LinearGradient } from "expo-linear-gradient";
@@ -23,7 +23,11 @@ import {
   BottomSheetView,
   BottomSheetModalProvider,
   BottomSheetTextInput,
+  SCROLLABLE_DECELERATION_RATE_MAPPER,
+  BottomSheetBackdrop,
 } from "@gorhom/bottom-sheet";
+import WebView from "react-native-webview";
+import Constants from "expo-constants";
 
 export default function HomeScreen() {
   const rateModalRef = useRef<BottomSheetModal>(null);
@@ -32,7 +36,7 @@ export default function HomeScreen() {
   const termsModalRef = useRef<BottomSheetModal>(null);
   const privacyModalRef = useRef<BottomSheetModal>(null);
 
-  const snapPoints = useMemo(() => ["25%", "50%"], []);
+  const snapPoints = useMemo(() => ["25%", "43%"], []);
   const snapPointsSecond = useMemo(() => ["18%", "55%"], []);
   const snapPointsThird = useMemo(() => ["50%", "90%"], []);
   const snapPointsFourth = useMemo(() => ["50%", "90%"], []);
@@ -67,6 +71,7 @@ export default function HomeScreen() {
   const handlePrivacyStart = useCallback(() => {
     privacyModalRef.current?.present();
   }, []);
+
   const handleSheetChanges = useCallback((index: number) => {
     console.log("handleSheetChanges", index);
   }, []);
@@ -135,6 +140,11 @@ export default function HomeScreen() {
 
     Linking.openURL(mailtoLink);
   };
+
+  const renderBackdrop = useCallback(
+    (props) => <BottomSheetBackdrop {...props} />,
+    []
+  );
 
   return (
     <GestureHandlerRootView>
@@ -316,6 +326,7 @@ export default function HomeScreen() {
           onChange={handleSheetChanges}
           backgroundStyle={{ backgroundColor: themedSheetColor }}
           handleIndicatorStyle={{ backgroundColor: themedHandleStyle }}
+          backdropComponent={renderBackdrop}
         >
           <BottomSheetView
             style={[
@@ -392,6 +403,7 @@ export default function HomeScreen() {
           backgroundStyle={{ backgroundColor: themedSheetColor }}
           handleIndicatorStyle={{ backgroundColor: themedHandleStyle }}
           keyboardBehavior="interactive"
+          backdropComponent={renderBackdrop}
         >
           <BottomSheetView
             style={[
@@ -448,6 +460,7 @@ export default function HomeScreen() {
           onChange={handleSheetChanges}
           backgroundStyle={{ backgroundColor: themedSheetColor }}
           handleIndicatorStyle={{ backgroundColor: themedHandleStyle }}
+          backdropComponent={renderBackdrop}
         >
           <BottomSheetView
             style={[
@@ -466,6 +479,7 @@ export default function HomeScreen() {
           onChange={handleSheetChanges}
           backgroundStyle={{ backgroundColor: themedSheetColor }}
           handleIndicatorStyle={{ backgroundColor: themedHandleStyle }}
+          backdropComponent={renderBackdrop}
         >
           <BottomSheetView
             style={[
@@ -473,8 +487,11 @@ export default function HomeScreen() {
               { backgroundColor: themedSheetColor },
             ]}
           >
-            <ThemedText style={styles.titleText}>Terms of Use</ThemedText>
+            <ThemedText style={styles.titleText}>
+              Terms and Conditions
+            </ThemedText>
           </BottomSheetView>
+          <WebView source={{ uri: "https://www.google.co.uk/" }} />
         </BottomSheetModal>
 
         <BottomSheetModal
@@ -484,6 +501,7 @@ export default function HomeScreen() {
           onChange={handleSheetChanges}
           backgroundStyle={{ backgroundColor: themedSheetColor }}
           handleIndicatorStyle={{ backgroundColor: themedHandleStyle }}
+          backdropComponent={renderBackdrop}
         >
           <BottomSheetView
             style={[
@@ -493,6 +511,7 @@ export default function HomeScreen() {
           >
             <ThemedText style={styles.titleText}>Privacy Policy</ThemedText>
           </BottomSheetView>
+          <WebView source={{ uri: "https://www.google.co.uk/" }} />
         </BottomSheetModal>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>
@@ -500,6 +519,13 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  webViewContainer: {
+    flex: 1,
+    marginTop: Constants.statusBarHeight,
+    height: "100%",
+    width: "100%",
+    zIndex: 10,
+  },
   reactLogo: {
     height: 178,
     width: 290,
@@ -518,6 +544,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: "black",
+    fontFamily: "Beiruti",
     fontSize: 18,
     fontWeight: "800",
   },
@@ -546,6 +573,7 @@ const styles = StyleSheet.create({
   googleButtonText: {
     fontSize: 16,
     color: "#fff",
+    fontFamily: "Beiruti",
     marginLeft: 8,
   },
   googleButton: {
@@ -569,6 +597,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: "#818181",
     fontSize: 15,
+    fontFamily: "Beiruti",
     marginBottom: 15,
     fontWeight: "500",
   },
@@ -584,6 +613,7 @@ const styles = StyleSheet.create({
   sectionItemText: {
     color: "black",
     fontSize: 16,
+    fontFamily: "Beiruti",
     marginLeft: 20,
     flex: 1,
     fontWeight: "400",
@@ -598,11 +628,13 @@ const styles = StyleSheet.create({
     color: "black",
     textAlign: "center",
     fontSize: 13,
+    fontFamily: "Beiruti",
     flex: 1,
     fontWeight: "400",
   },
   generatorText: {
     fontSize: 12,
+    fontFamily: "Beiruti",
     color: "white",
   },
   generatorGradient: {
@@ -631,65 +663,59 @@ const styles = StyleSheet.create({
     width: 35,
     height: 35,
   },
-  bottomSheetContent: {
-    backgroundColor: "white",
-    padding: 16,
-    height: 450,
-  },
-  bottomSheetHeader: {
-    backgroundColor: "lightgray",
-    padding: 16,
-    height: 50,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
   contentContainer: {
     flex: 1,
     alignItems: "center",
+    zIndex: 10,
   },
   titleText: {
-    fontSize: 22,
-    marginTop: 12,
+    fontSize: 35,
+    marginTop: 20,
+    fontFamily: "Beiruti",
     textAlign: "center",
-    fontWeight: "800",
+    padding: 10,
   },
   subTitleText: {
-    fontSize: 20,
-    marginTop: 12,
+    color: "rgba(0,0,0,0.5)",
+    fontSize: 30,
+    padding: 10,
+    fontFamily: "Beiruti",
     marginBottom: 12,
     textAlign: "center",
     fontWeight: "800",
   },
   cuteText: {
-    fontSize: 16,
+    color: "rgba(0,0,0,0.5)",
+    fontSize: 18,
+    fontFamily: "Beiruti",
     textAlign: "center",
   },
   buttonsContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
-    width: "100%",
+    gap: 15,
     position: "absolute",
     bottom: 120,
     alignContent: "center",
     backgroundColor: "transparent",
-    paddingHorizontal: 5,
+    paddingHorizontal: 15,
   },
   optionButton: {
     backgroundColor: "transparent",
-    borderRadius: 25,
-    width: "60%",
+    borderRadius: 11,
+    width: "100%",
     height: 100,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 20,
+    flex: 1,
   },
   buttonText: {
     textAlign: "center",
     marginTop: 10,
     fontWeight: "bold",
     color: "white",
+    fontFamily: "Beiruti",
   },
   feedbackText: {
     fontSize: 22,
@@ -697,31 +723,32 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
     fontWeight: "800",
+    fontFamily: "Beiruti",
   },
   input: {
-    width: "80%",
+    width: "90%",
     height: 40,
-    borderColor: "gray",
+    borderColor: "rgba(0,0,0,.15)",
     borderWidth: 1,
     paddingHorizontal: 10,
     marginBottom: 10,
     borderRadius: 10,
   },
   bodyInput: {
-    width: "80%",
+    width: "90%",
     height: 120,
-    borderColor: "gray",
+    borderColor: "rgba(0,0,0,.15)",
     borderWidth: 1,
     paddingHorizontal: 10,
     marginBottom: 10,
     borderRadius: 10,
   },
   submitButton: {
-    marginTop: 10,
+    marginTop: 0,
     backgroundColor: "transparent",
-    borderRadius: 25,
-    width: "60%",
-    height: 50,
+    borderRadius: 250,
+    width: "70%",
+    height: 45,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -730,5 +757,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "white",
     justifyContent: "center",
+    fontFamily: "Beiruti",
   },
 });

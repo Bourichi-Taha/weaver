@@ -49,7 +49,6 @@ export function TabBarIcon({ name, color, focused }: TabBarIconProps) {
         height: 30,
         justifyContent: "center",
         alignItems: "center",
-        marginBottom: 5,
       }}
     >
       <Image
