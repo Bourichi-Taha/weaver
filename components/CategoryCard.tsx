@@ -5,6 +5,7 @@ import {
   Platform,
   View,
   ImageBackground,
+  TouchableOpacity,
 } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -14,10 +15,17 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 interface CategoryCardProps {
   title: string;
   image: string;
+  wallpapers: string[];
   style?: object | number | Array<object | number>;
+  onPress: () => void;
 }
 
-const CategoryCard: React.FC<CategoryCardProps> = ({ image, title }) => {
+const CategoryCard: React.FC<CategoryCardProps> = ({
+  image,
+  title,
+  wallpapers,
+  onPress,
+}) => {
   const shadowStyle = Platform.select({
     ios: {
       shadowColor: "#000000",
@@ -43,9 +51,9 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ image, title }) => {
       : ["rgba(0,0,0,1)", "rgba(0,0,0,0)", "rgba(0,0,0,0)"];
 
   return (
-    <ThemedView style={[styles.card, shadowStyle]}>
+    <TouchableOpacity style={[styles.card, shadowStyle]} onPress={onPress}>
       <ImageBackground
-        source={{ uri: image }}
+        source={image}
         style={styles.cardImage}
         resizeMode="cover"
       />
@@ -57,9 +65,8 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ image, title }) => {
         style={styles.overlayContainer}
       >
         <ThemedText style={styles.cardTitle}>{title}</ThemedText>
-        {/* <ThemedText style={styles.cardDescription}>{description}</ThemedText> */}
       </LinearGradient>
-    </ThemedView>
+    </TouchableOpacity>
   );
 };
 
@@ -83,7 +90,7 @@ const styles = StyleSheet.create({
     top: 0,
     flex: 1,
     alignItems: "center",
-    justifyContent: "center", // Center items vertically
+    justifyContent: "center",
     position: "absolute",
   },
   cardTitle: {

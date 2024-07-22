@@ -4,15 +4,20 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
-
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import SplashScreenComponent from "./SplashScreenComponent";
+import IntroSliders from "./IntroSliders";
+import wallpaperDetails from "./wallpaperDetails";
+import categoryDetails from "./categoryDetails";
+import TabLayout from "./(tabs)/_layout";
+import { FavoritesProvider } from "@/components/favouritesContext";
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+const MyStack = createStackNavigator();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -25,24 +30,43 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loaded) {
-      SplashScreen.hideAsync();
+      setTimeout(() => SplashScreen.hideAsync(), 5000);
     }
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
-
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-        <Stack.Screen
-          name="wallpaperDetails"
-          options={{ headerShown: false }}
-        />
-      </Stack>
-    </ThemeProvider>
+    <FavoritesProvider>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <NavigationContainer independent={true}>
+          <MyStack.Navigator initialRouteName="SplashScreenComponent">
+            <MyStack.Screen
+              name="SplashScreenComponent"
+              component={SplashScreenComponent}
+              options={{ headerShown: false }}
+            />
+            <MyStack.Screen
+              name="IntroSliders"
+              component={IntroSliders}
+              options={{ headerShown: false }}
+            />
+            <MyStack.Screen
+              name="TabLayout"
+              component={TabLayout}
+              options={{ headerShown: false }}
+            />
+            <MyStack.Screen
+              name="wallpaperDetails"
+              component={wallpaperDetails}
+              options={{ headerShown: false }}
+            />
+            <MyStack.Screen
+              name="categoryDetails"
+              component={categoryDetails}
+              options={{ headerShown: false }}
+            />
+          </MyStack.Navigator>
+        </NavigationContainer>
+      </ThemeProvider>
+    </FavoritesProvider>
   );
 }

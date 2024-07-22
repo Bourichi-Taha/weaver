@@ -1,20 +1,27 @@
 import { Tabs } from "expo-router";
 import React from "react";
 
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { BlurView } from "expo-blur";
 import { StyleSheet } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
+import index from "./index";
+import favourites from "./favourites";
+import categories from "./categories";
+import profile from "./profile";
 
-export default function TabLayout() {
+const Tab = createBottomTabNavigator();
+
+const TabLayout = () => {
   const colorScheme = useColorScheme();
   const blurTint = colorScheme === "dark" ? "dark" : "light";
 
   return (
-    <Tabs
-      screenOptions={{
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].activeTint,
         tabBarInactiveTintColor: Colors[colorScheme ?? "light"].inactiveTint,
         headerShown: false,
@@ -58,37 +65,91 @@ export default function TabLayout() {
         tabBarLabelStyle: {
           fontSize: 11,
         },
-      }}
-    >
-      {["index", "favourites", "categories", "profile"].map((screen, index) => {
-        const icons = ["home", "bookmark", "colorFilter", "person"];
-        const titles = ["Home", "Favourites", "Categories", "Profile"];
-        return (
-          <Tabs.Screen
-            key={screen}
-            name={screen}
-            options={{
-              title: titles[index],
-              tabBarIcon: ({ focused }) => (
-                <ThemedView
-                  style={
-                    focused ? styles.iconContainerFocused : styles.iconContainer
-                  }
-                >
-                  <TabBarIcon
-                    name={icons[index]}
-                    color={focused ? "#FFFFFF" : "#999999"}
-                    focused={focused}
-                  />
-                </ThemedView>
-              ),
-            }}
-          />
-        );
       })}
-    </Tabs>
+    >
+      <Tab.Screen
+        name="index"
+        component={index}
+        options={{
+          title: "Home",
+          tabBarIcon: ({ focused }) => (
+            <ThemedView
+              style={
+                focused ? styles.iconContainerFocused : styles.iconContainer
+              }
+            >
+              <TabBarIcon
+                name="home"
+                color={focused ? "#FFFFFF" : "#999999"}
+                focused={focused}
+              />
+            </ThemedView>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="favourites"
+        component={favourites}
+        options={{
+          title: "Favourites",
+          tabBarIcon: ({ focused }) => (
+            <ThemedView
+              style={
+                focused ? styles.iconContainerFocused : styles.iconContainer
+              }
+            >
+              <TabBarIcon
+                name="bookmark"
+                color={focused ? "#FFFFFF" : "#999999"}
+                focused={focused}
+              />
+            </ThemedView>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="categories"
+        component={categories}
+        options={{
+          title: "Categories",
+          tabBarIcon: ({ focused }) => (
+            <ThemedView
+              style={
+                focused ? styles.iconContainerFocused : styles.iconContainer
+              }
+            >
+              <TabBarIcon
+                name="colorFilter"
+                color={focused ? "#FFFFFF" : "#999999"}
+                focused={focused}
+              />
+            </ThemedView>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="profile"
+        component={profile}
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ focused }) => (
+            <ThemedView
+              style={
+                focused ? styles.iconContainerFocused : styles.iconContainer
+              }
+            >
+              <TabBarIcon
+                name="person"
+                color={focused ? "#FFFFFF" : "#999999"}
+                focused={focused}
+              />
+            </ThemedView>
+          ),
+        }}
+      />
+    </Tab.Navigator>
   );
-}
+};
 
 const styles = StyleSheet.create({
   blurContainer: {
@@ -112,3 +173,5 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
 });
+
+export default TabLayout;

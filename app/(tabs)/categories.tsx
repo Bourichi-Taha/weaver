@@ -5,45 +5,25 @@ import {
   View,
   ScrollView,
   BackHandler,
+  TouchableOpacity,
+  Text,
 } from "react-native";
-
-import { HelloWave } from "@/components/HelloWave";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import CategoryCard from "@/components/CategoryCard";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { LinearGradient } from "expo-linear-gradient";
-
-const cardData = [
-  {
-    title: "Tic Tac Toe 2 Player: XO Game",
-    image:
-      "https://c4.wallpaperflare.com/wallpaper/504/621/107/angry-birds-cool-art-hd-angry-birds-wallpaper-preview.jpg",
-  },
-  {
-    title: "2 Player games : no wifi games",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_Dtjd-k_fkBKIDKoI6aSihX3PyA3uKUDMX8h4RHxjI5gY6sS1Tq3Rk4U_QlFhKJc7MJw&usqp=CAU",
-  },
-  {
-    title: "Talking Tom Hero Dash",
-    image:
-      "https://wallpaper.forfun.com/fetch/8e/8efddbe9dbdf214c7ccade749ed2da4f.jpeg",
-  },
-  {
-    title: "My Talking Tom Friends",
-    image:
-      "https://wallpaper.forfun.com/fetch/5f/5f6de3a5fc9eecc266681ac64beb2e8b.jpeg",
-  },
-  {
-    title: "Stickman Party MiniGames",
-    image:
-      "https://w0.peakpx.com/wallpaper/591/366/HD-wallpaper-the-angry-birds-movie-2-poster.jpg",
-  },
-];
+import { useNavigation } from "expo-router";
+import { images } from "../../utils/index";
+import metaData from "../../db.json";
+import { useState, useEffect } from "react";
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const color = colorScheme === "dark" ? "dark" : "light";
   const gradientColors =
@@ -55,24 +35,44 @@ export default function HomeScreen() {
   const nameText =
     colorScheme === "dark" ? "rgba(255, 255, 255, 1)" : "rgba(0, 0, 0, 1)";
 
+  const [categoriesData, setCategoriesData] = useState<
+    { title: string; image: string; wallpapers: string[] }[]
+  >([]);
+
+  const navigation = useNavigation();
+
   return (
     <ThemedView style={styles.container}>
-      <ThemedView
+      <SafeAreaView
         style={[styles.backgroundContainer, { backgroundColor: color }]}
       >
-        <ScrollView style={styles.mainContent}>
-          <ThemedView style={styles.cardContainer}>
-            {cardData.map((card, index) => (
+        <ScrollView
+          style={{
+            paddingTop: insets.top + 100,
+            flex: 1,
+          }}
+        >
+          <ThemedView
+            style={[
+              styles.cardContainer,
+              { paddingBottom: insets.bottom + 170 },
+            ]}
+          >
+            {metaData.categories.map((category, index) => (
               <CategoryCard
                 key={index}
-                title={card.title}
-                image={card.image}
+                title={category.category}
+                image={images[category.icon]}
+                wallpapers={category.images.map((img) => images[img])}
                 style={styles.card}
+                onPress={() => {
+                  navigation.navigate("categoryDetails", { category });
+                }}
               />
             ))}
           </ThemedView>
         </ScrollView>
-      </ThemedView>
+      </SafeAreaView>
       <LinearGradient
         colors={gradientColors}
         locations={[0, 0.7, 1]}
@@ -85,18 +85,15 @@ export default function HomeScreen() {
                 Welcome to
               </ThemedText>
               <ThemedText style={[styles.nameTextAppName, { color: nameText }]}>
-                Country Balls: World War
+                {metaData.app_name}
               </ThemedText>
             </ThemedView>
             <ThemedView style={styles.icon}>
-              <Image
-                source={{ uri: "https://i.redd.it/60la7vb17k811.jpg" }}
-                style={styles.icon}
-              />
+              <Image source={images[metaData.icon_url]} style={styles.icon} />
             </ThemedView>
           </ThemedView>
           <ThemedView style={styles.titleContainer}>
-            <ThemedText type="title">Pay attention to the case !</ThemedText>
+            <ThemedText type="title">Wallpaper categories</ThemedText>
           </ThemedView>
         </ThemedView>
       </LinearGradient>
@@ -181,8 +178,8 @@ const styles = StyleSheet.create({
   },
   containerHeader: {
     backgroundColor: "transparent",
-    paddingTop: 40,
-    paddingHorizontal: 10,
+    paddingTop: 20,
+    paddingHorizontal: 20,
   },
   mainContent: {
     paddingTop: 220,

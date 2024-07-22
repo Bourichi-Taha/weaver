@@ -2,28 +2,31 @@ import React, { useEffect, useState } from "react";
 import {
   Image,
   StyleSheet,
-  Dimensions,
-  Platform,
   TouchableOpacity,
+  Platform,
+  Dimensions,
 } from "react-native";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ThemedView } from "@/components/ThemedView";
+
+interface WallpaperCardProps {
+  index: number;
+  title: string;
+  images: string[];
+  onPress: () => void;
+  onPressHeart: () => void;
+  style?: object | number | Array<object | number>;
+}
 
 const { width } = Dimensions.get("window");
 const cardWidth = (width - 45) / 2;
 
-interface WallpaperCardProps {
-  title: string;
-  description: string;
-  image: string;
-  style?: object | number | Array<object | number>;
-}
-
 const WallpaperCard: React.FC<WallpaperCardProps> = ({
+  index,
   title,
-  description,
-  image,
+  images,
+  onPress,
+  onPressHeart,
 }) => {
   const shadowStyle = Platform.select({
     ios: {
@@ -43,7 +46,9 @@ const WallpaperCard: React.FC<WallpaperCardProps> = ({
     },
   });
 
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavourite, setIsFavourite] = useState(false);
+  const currentImage = images[currentImageIndex];
 
   useEffect(() => {
     const checkIfFavourite = async () => {
@@ -57,40 +62,25 @@ const WallpaperCard: React.FC<WallpaperCardProps> = ({
       }
     };
     checkIfFavourite();
-  }, []);
+  }, [title]);
 
-  const handleAddToFavourites = async () => {
-    try {
-      const favourites = await AsyncStorage.getItem("");
-      let favouritesArray = favourites ? JSON.parse(favourites) : [];
-      const newFavourite = { title, description, image };
-
-      const exists = favouritesArray.some((fav) => fav.title === title);
-      if (!exists) {
-        favouritesArray.push(newFavourite);
-        await AsyncStorage.setItem(
-          "@userFavourites",
-          JSON.stringify(favouritesArray)
-        );
-        setIsFavourite(true);
-        console.log("Added to favourites");
-      } else {
-        console.log("Already in favourites");
-      }
-    } catch (error) {
-      console.error("Error adding to favourites", error);
-    }
+  const handleToggleFavourite = () => {
+    onPressHeart();
+    setIsFavourite(!isFavourite);
   };
 
   return (
     <ThemedView style={[styles.card, shadowStyle]}>
-      <Image source={{ uri: image }} style={styles.cardImage} />
-      <TouchableOpacity onPress={handleAddToFavourites}>
+      <TouchableOpacity style={[styles.card, shadowStyle]} onPress={onPress}>
+        <Image source={currentImage} style={styles.cardImage} />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.likeButton, isFavourite && styles.likeButtonActive]}
+        onPress={handleToggleFavourite}
+      >
         <Image
-          source={{
-            uri: "https://img.icons8.com/?size=30&id=uEbdWKPIV0xF&format=png&color=000000",
-          }}
-          style={[styles.likeButton, isFavourite && { tintColor: "red" }]}
+          source={require("../assets/images/icons/icons8-favorite-100.png")}
+          style={styles.likeButtonImage}
         />
       </TouchableOpacity>
     </ThemedView>
@@ -103,32 +93,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     width: cardWidth,
     height: 250,
+    overflow: "hidden",
   },
   cardImage: {
     borderRadius: 20,
     width: "100%",
     height: 250,
   },
-  cardContent: {
-    padding: 5,
-    height: 90,
-  },
-  cardTitle: {
-    fontSize: 17,
-    fontWeight: "800",
-    marginBottom: 2,
-  },
-  cardDescription: {
-    fontSize: 11,
-    color: "#555555",
-    lineHeight: 16,
-  },
   likeButton: {
     position: "absolute",
     top: 10,
     right: 10,
-    width: 30,
-    height: 30,
+    width: 35,
+    height: 35,
+    tintColor: "white",
+  },
+  likeButtonActive: {
+    backgroundColor: "rgba(234, 110, 127, .9)",
+    borderRadius: 50,
+  },
+  likeButtonImage: {
+    width: 35,
+    height: 35,
     tintColor: "white",
   },
 });

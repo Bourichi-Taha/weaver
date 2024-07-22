@@ -2,10 +2,8 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
-  Linking,
   Platform,
   Text,
-  TextInput,
   Share,
 } from "react-native";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
@@ -13,7 +11,6 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-SCROLLABLE_DECELERATION_RATE_MAPPER;
 import React, {
   useRef,
   useCallback,
@@ -21,7 +18,7 @@ import React, {
   useState,
   useEffect,
 } from "react";
-import Rate, { IConfig, AndroidMarket } from "react-native-rate";
+import Rate from "react-native-rate";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import {
@@ -29,14 +26,15 @@ import {
   BottomSheetView,
   BottomSheetModalProvider,
   BottomSheetTextInput,
-  SCROLLABLE_DECELERATION_RATE_MAPPER,
   BottomSheetBackdrop,
 } from "@gorhom/bottom-sheet";
+import type { BottomSheetDefaultBackdropProps } from "../../node_modules/@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types";
 import WebView from "react-native-webview";
 import Constants from "expo-constants";
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Linking from "expo-linking";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -59,52 +57,88 @@ export default function HomeScreen() {
   const themedHandleStyle = colorScheme === "dark" ? "#474747" : "#404040";
   const themedCursorStyle = colorScheme === "dark" ? "#474747" : "#404040";
 
-  const [email, setEmail] = useState("");
+  const [userInfo, setUserInfo] = useState<{ picture?: string } | null>(null);
+  const [isSignedIn, setIsSignedIn] = useState(false);
+
+  const getRedirectUri = () => {
+    if (Constants.platform && Constants.platform.ios) {
+      return "exp://192.168.11.108:8081";
+    } else if (Constants.platform && Constants.platform.android) {
+      const path = "exp://192.168.11.108:8081";
+      return Linking.createURL(path);
+    } else {
+      return "http://localhost:8081/profile";
+    }
+  };
+
+  const redirectUri = getRedirectUri();
+
+  const [fromEmail, setFromEmail] = useState("");
+  const [toEmail, setToEmail] = useState("mobtwin@info.com");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     iosClientId:
-      "146135389195-m58h1686dbmcqedagip4l17qpu4198n0.apps.googleusercontent.com",
+      "146135389195-jdm7rqvl81ls8va9hb0jippsdghpoiog.apps.googleusercontent.com",
     androidClientId:
       "146135389195-as37vq11murmf986p54t8er3kh3hpfv4.apps.googleusercontent.com",
     webClientId:
       "146135389195-qtphvosnanndgi3ukn8n9haslpbd4d9t.apps.googleusercontent.com",
     scopes: ["profile", "email"],
+    redirectUri,
   });
 
-  const [userInfo, setUserInfo] = useState(null);
-
   useEffect(() => {
-    handleSignInWithGoogle();
+    const fetchUserInfo = async () => {
+      if (response?.type === "success") {
+        try {
+          const authentication = response.authentication;
+          if (!authentication) {
+            throw new Error("Authentication object not found");
+          }
+          const accessToken = authentication.accessToken;
+          const user = await getUserInfo(accessToken);
+          setUserInfo(user);
+          setIsSignedIn(true);
+          await AsyncStorage.setItem("@user", JSON.stringify(user));
+        } catch (error) {
+          console.error("Error fetching user info:", error);
+        }
+      }
+    };
+
+    fetchUserInfo();
   }, [response]);
 
-  async function handleSignInWithGoogle() {
-    const user = await AsyncStorage.getItem("@user");
-    if (!user) {
-      if (response?.type === "success") {
-        await getUserInfo(response.authentication?.accessToken);
-      }
-    } else {
-      setUserInfo(JSON.parse(user));
-    }
-  }
-
-  const getUserInfo = async (token) => {
-    if (!token) return;
+  const getUserInfo = async (accessToken: string) => {
     try {
       const response = await fetch(
         "https://www.googleapis.com/userinfo/v2/me",
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         }
       );
-
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
       const user = await response.json();
-      await AsyncStorage.setItem("@user", JSON.stringify(user));
-      setUserInfo(user);
+      return user;
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching user info:", error);
+      throw error;
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await AsyncStorage.removeItem("@user");
+      setUserInfo(null);
+      setIsSignedIn(false);
+    } catch (error) {
+      console.error("Error signing out:", error);
     }
   };
 
@@ -186,21 +220,97 @@ export default function HomeScreen() {
   };
 
   const handleSubmit = () => {
-    const email = "mobtwinteam@info.com";
-    const subject = "Feedback or Review Submission";
-    const body = "Here is my feedback/review...";
-
-    const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(body)}`;
+    setToEmail("mobtwin@info.com");
+    const mailtoLink = `mailto:${toEmail}?subject=${encodeURIComponent(
+      subject || "No Subject"
+    )}&body=${encodeURIComponent(body || "No Body")}`;
 
     Linking.openURL(mailtoLink);
   };
 
   const renderBackdrop = useCallback(
-    (props) => <BottomSheetBackdrop {...props} />,
+    (props: BottomSheetDefaultBackdropProps) => (
+      <BottomSheetBackdrop {...props} />
+    ),
     []
   );
+
+  const renderGoogleIcon = () => {
+    if (userInfo && userInfo.picture) {
+      return (
+        <Image
+          source={{ uri: userInfo.picture }}
+          style={{
+            width: 100,
+            height: 100,
+            borderRadius: 50,
+          }}
+        />
+      );
+    } else {
+      return (
+        <Image
+          source={require("../../assets/images/icons/icons8-male-user-100.png")}
+          style={{
+            width: 90,
+            height: 90,
+            opacity: 0.15,
+            tintColor: color,
+          }}
+        />
+      );
+    }
+  };
+
+  const renderGoogleButton = () => {
+    if (isSignedIn) {
+      return (
+        <TouchableOpacity onPress={handleSignOut}>
+          <ThemedView style={styles.googleButton}>
+            <BlurView intensity={50} style={styles.blurContainer}>
+              <LinearGradient
+                colors={["#FE6292", "#E57373"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.googleButtonGradient}
+              >
+                <Image
+                  source={require("../../assets/images/icons/icons8-google-100.png")}
+                  style={styles.googleIcon}
+                />
+                <ThemedText style={styles.googleButtonText}>
+                  Sign Out
+                </ThemedText>
+              </LinearGradient>
+            </BlurView>
+          </ThemedView>
+        </TouchableOpacity>
+      );
+    } else {
+      return (
+        <TouchableOpacity disabled={!request} onPress={() => promptAsync()}>
+          <ThemedView style={styles.googleButton}>
+            <BlurView intensity={50} style={styles.blurContainer}>
+              <LinearGradient
+                colors={["#FE6292", "#E57373"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.googleButtonGradient}
+              >
+                <Image
+                  source={require("../../assets/images/icons/icons8-google-100.png")}
+                  style={styles.googleIcon}
+                />
+                <ThemedText style={styles.googleButtonText}>
+                  Sign in with Google
+                </ThemedText>
+              </LinearGradient>
+            </BlurView>
+          </ThemedView>
+        </TouchableOpacity>
+      );
+    }
+  };
 
   return (
     <GestureHandlerRootView>
@@ -215,40 +325,9 @@ export default function HomeScreen() {
       >
         <ThemedView style={styles.profileSection}>
           <ThemedView style={styles.profileImageSection}>
-            <Image
-              source={{
-                uri: "https://img.icons8.com/?size=1000&id=YRJN4lBDhzh8&format=png&color=000000",
-              }}
-              style={{
-                width: 60,
-                height: 60,
-                opacity: 0.15,
-                tintColor: color,
-              }}
-            />
+            {renderGoogleIcon()}
           </ThemedView>
-          <TouchableOpacity disabled={!request} onPress={() => promptAsync()}>
-            <ThemedView style={styles.googleButton}>
-              <BlurView intensity={50} style={styles.blurContainer}>
-                <LinearGradient
-                  colors={["#FE6292", "#E57373"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.googleButtonGradient}
-                >
-                  <Image
-                    source={{
-                      uri: "https://img.icons8.com/?size=100&id=GCr1YMMngliP&format=png&color=ffffff",
-                    }}
-                    style={styles.googleIcon}
-                  />
-                  <ThemedText style={styles.googleButtonText}>
-                    Sign in with Google
-                  </ThemedText>
-                </LinearGradient>
-              </BlurView>
-            </ThemedView>
-          </TouchableOpacity>
+          {renderGoogleButton()}
         </ThemedView>
 
         <ThemedView style={styles.section}>
@@ -258,9 +337,7 @@ export default function HomeScreen() {
             onPress={handleRateStart}
           >
             <Image
-              source={{
-                uri: "https://img.icons8.com/?size=100&id=WJRf67QgKO2k&format=png&color=000000",
-              }}
+              source={require("../../assets/images/icons/icons8-star-100.png")}
               style={[styles.iconImage, { tintColor: color }]}
             />
             <ThemedText style={[styles.sectionItemText, { color: color }]}>
@@ -272,9 +349,7 @@ export default function HomeScreen() {
             onPress={handleContactStart}
           >
             <Image
-              source={{
-                uri: "https://img.icons8.com/?size=100&id=QqtDTGEho4jP&format=png&color=000000",
-              }}
+              source={require("../../assets/images/icons/icons8-mail-100.png")}
               style={[styles.iconImage, { tintColor: color }]}
             />
             <ThemedText style={[styles.sectionItemText, { color: color }]}>
@@ -283,9 +358,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
           <TouchableOpacity style={styles.sectionItem} onPress={shareApp}>
             <Image
-              source={{
-                uri: "https://img.icons8.com/?size=100&id=JanHgvvWv0rK&format=png&color=000000",
-              }}
+              source={require("../../assets/images/icons/icons8-share-100.png")}
               style={[styles.iconImage, { tintColor: color }]}
             />
             <ThemedText style={[styles.sectionItemText, { color: color }]}>
@@ -300,9 +373,7 @@ export default function HomeScreen() {
             onPress={handleAboutStart}
           >
             <Image
-              source={{
-                uri: "https://img.icons8.com/?size=100&id=GmcSXvmvXrd7&format=png&color=000000",
-              }}
+              source={require("../../assets/images/icons/icons8-info-100.png")}
               style={[styles.iconImage, { tintColor: color }]}
             />
             <ThemedText style={[styles.sectionItemText, { color: color }]}>
@@ -314,9 +385,7 @@ export default function HomeScreen() {
             onPress={handleTermsStart}
           >
             <Image
-              source={{
-                uri: "https://img.icons8.com/?size=100&id=eShmRfVzlvgL&format=png&color=000000",
-              }}
+              source={require("../../assets/images/icons/icons8-protect-100.png")}
               style={[styles.iconImage, { tintColor: color }]}
             />
             <ThemedText style={[styles.sectionItemText, { color: color }]}>
@@ -328,9 +397,7 @@ export default function HomeScreen() {
             onPress={handlePrivacyStart}
           >
             <Image
-              source={{
-                uri: "https://img.icons8.com/?size=100&id=r2Vh0YFzweoF&format=png&color=000000",
-              }}
+              source={require("../../assets/images/icons/icons8-security-lock-100.png")}
               style={[styles.iconImage, { tintColor: color }]}
             />
             <ThemedText style={[styles.sectionItemText, { color: color }]}>
@@ -349,9 +416,7 @@ export default function HomeScreen() {
               onPress={handlePress}
             >
               <Image
-                source={{
-                  uri: "data:image/webp;base64,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",
-                }}
+                source={require("../../assets/images/icons/mobtwin.webp")}
                 style={styles.logoIcon}
               />
             </TouchableOpacity>
@@ -392,12 +457,6 @@ export default function HomeScreen() {
             <ThemedText style={styles.subTitleText}>
               Help us expand and improve!
             </ThemedText>
-            <ThemedText style={styles.cuteText}>
-              Spread your love for the app.
-            </ThemedText>
-            <ThemedText style={styles.cuteText}>
-              Guide others to discover it by leaving a review!
-            </ThemedText>
             <ThemedView style={styles.buttonsContainer}>
               <TouchableOpacity
                 style={styles.optionButton}
@@ -410,9 +469,7 @@ export default function HomeScreen() {
                   style={styles.optionButton}
                 >
                   <Image
-                    source={{
-                      uri: "https://img.icons8.com/?size=100&id=c5GEXJDYBcbX&format=png&color=000000",
-                    }}
+                    source={require("../../assets/images/icons/icons8-comments-100.png")}
                     style={{
                       width: 45,
                       height: 45,
@@ -433,9 +490,7 @@ export default function HomeScreen() {
                   style={styles.optionButton}
                 >
                   <Image
-                    source={{
-                      uri: "https://img.icons8.com/?size=100&id=WJRf67QgKO2k&format=png&color=000000",
-                    }}
+                    source={require("../../assets/images/icons/icons8-star-100.png")}
                     style={{
                       width: 45,
                       height: 45,
@@ -474,7 +529,7 @@ export default function HomeScreen() {
               keyboardType="email-address"
               autoComplete="email"
               cursorColor={themedCursorStyle}
-              onChangeText={(text) => setEmail(text)}
+              onChangeText={(text) => setFromEmail(text)}
               inputMode="email"
             />
             <BottomSheetTextInput
@@ -537,7 +592,7 @@ export default function HomeScreen() {
         >
           <BottomSheetView
             style={[
-              styles.contentContainer,
+              styles.webViewContainer,
               { backgroundColor: themedSheetColor },
             ]}
           >
@@ -559,7 +614,7 @@ export default function HomeScreen() {
         >
           <BottomSheetView
             style={[
-              styles.contentContainer,
+              styles.webViewContainer,
               { backgroundColor: themedSheetColor },
             ]}
           >
@@ -574,11 +629,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   webViewContainer: {
-    flex: 1,
-    marginTop: Constants.statusBarHeight,
-    height: "100%",
-    width: "100%",
-    zIndex: 10,
+    alignItems: "center",
   },
   reactLogo: {
     height: 178,
@@ -720,7 +771,6 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     alignItems: "center",
-    zIndex: 10,
   },
   titleText: {
     fontSize: 35,

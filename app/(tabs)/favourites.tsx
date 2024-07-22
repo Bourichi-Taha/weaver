@@ -1,5 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { Image, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  Image,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  RefreshControl,
+  View,
+} from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import WallpaperCard from "@/components/WallpaperCard";
@@ -7,55 +14,19 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "expo-router";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import metaData from "../../db.json";
+import { images } from "../../utils/index";
+import ShimmerPlaceHolder from "react-native-shimmer-placeholder";
+import { BlurView } from "expo-blur";
+import { useFavorites } from "@/components/favouritesContext";
 
-const cardData = [
-  {
-    title: "Card 1",
-    description:
-      "Description for Card 1. MAHA ASK IF YOU SHOULD ADD THESE OR NOT",
-    image:
-      "https://i.pinimg.com/736x/04/7e/08/047e085d7da80a191c5ee1633896cc1b.jpg",
-  },
-  {
-    title: "Card 2",
-    description: "Description for Card 2",
-    image:
-      "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/7439fcf5-dec7-4de4-829f-fd062c0a68d4/d6o6xi2-6bc0739d-faa1-4960-bdf4-657486559c35.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzc0MzlmY2Y1LWRlYzctNGRlNC04MjlmLWZkMDYyYzBhNjhkNFwvZDZvNnhpMi02YmMwNzM5ZC1mYWExLTQ5NjAtYmRmNC02NTc0ODY1NTljMzUuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.J3TCxCbS51iuF9TlU40GwPtR8pbXIQn3Uam-K4S6ja0",
-  },
-  {
-    title: "Card 3",
-    description: "Description for Card 1",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUelavUAczUbvzA1zQnN2EUo3XSmhNwEEeDw&s",
-  },
-  {
-    title: "Card 4",
-    description: "Description for Card 2",
-    image:
-      "https://is.zobj.net/image-server/v1/images?r=-WREyAY8zId8CktIrkpSnanqG3lkqjp2L7RjRidarpIRBZ-y9nZvnnpCustYStE7lg9T_fSEhiu0TwJF2KLlawkyqatN5EIRymxEHht4O4a_l0wLQjtHDUgAYGtzaFyX7NYcomE1Lkw_rtX-Sd9mCc586N_64nQXWXSnyDTSJfI9DJN7q44mVzpTSrGhbf9ogBS435ztV7DZhehNBGB8AgSCPYBIzv2B6zaBhQ",
-  },
-  {
-    title: "Card 5",
-    description: "Description for Card 1",
-    image:
-      "https://e1.pxfuel.com/desktop-wallpaper/390/618/desktop-wallpaper-rayman-iphone-rayman-origins.jpg",
-  },
-  {
-    title: "Card 6",
-    description: "Description for Card 2",
-    image:
-      "https://i.pinimg.com/originals/7e/ef/fe/7eeffe5e51e6ed327f1a9dd4705f616b.jpg",
-  },
-  {
-    title: "Card 7",
-    description: "Description for Card 2",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdIovfe7JC1WmR4_Ek7qV5nYbIbkt3Nt3sqA&s",
-  },
-];
-
-const HomeScreen = () => {
-  const [favouriteWallpapers, setFavouriteWallpapers] = useState([]);
+const FavouritesScreen = () => {
+  const insets = useSafeAreaInsets();
+  const [refreshing, setRefreshing] = useState(false);
   const colorScheme = useColorScheme();
   const color = colorScheme === "dark" ? "dark" : "light";
   const gradientColors =
@@ -66,60 +37,110 @@ const HomeScreen = () => {
     colorScheme === "dark" ? "rgba(255, 255, 255, .35)" : "rgba(0, 0, 0, .35)";
   const nameText =
     colorScheme === "dark" ? "rgba(255, 255, 255, 1)" : "rgba(0, 0, 0, 1)";
-
   const navigation = useNavigation();
+  const { favorites, removeFromFavorites, isFavorite } = useFavorites();
 
-  useEffect(() => {
-    const fetchFavourites = async () => {
-      try {
-        const favourites = await AsyncStorage.getItem("@userFavourites");
-        if (favourites !== null) {
-          setFavouriteWallpapers(JSON.parse(favourites));
-        }
-      } catch (error) {
-        console.error("Error retrieving favourites:", error);
-      }
-    };
-    fetchFavourites();
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setRefreshing(false);
   }, []);
 
   return (
     <ThemedView style={styles.container}>
-      {favouriteWallpapers.length === 0 ? (
-        <ThemedView
+      {favorites.length === 0 ? (
+        <SafeAreaView
           style={[styles.backgroundContainer, { backgroundColor: color }]}
         >
-          <ThemedText>
-            No wallpaper was set to favourite. Discover more
-          </ThemedText>
-          <TouchableOpacity onPress={() => navigation.navigate("index")}>
-            Here
-          </TouchableOpacity>
-        </ThemedView>
+          <ScrollView
+            style={{
+              paddingTop: insets.top + 90,
+              paddingHorizontal: 10,
+              alignContent: "center",
+              flex: 1,
+            }}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          >
+            <ThemedView style={[{ paddingBottom: insets.bottom + 170 }]}>
+              <View style={styles.emptyCard}>
+                <Image
+                  source={require("../../assets/images/icons/icons8-search-for-love-100.png")}
+                  style={{
+                    width: 80,
+                    height: 80,
+                    alignSelf: "center",
+                    marginVertical: 30,
+                  }}
+                />
+              </View>
+              <ThemedText style={styles.emptyTitle}>
+                No favourites yet
+              </ThemedText>
+              <ThemedText style={styles.suggestionTitle}>
+                Tap on the heart to add to your favourites!
+              </ThemedText>
+              <ThemedText style={styles.suggestionTitle}>
+                Add wallpapers to your favourites, see them here at a glance.
+              </ThemedText>
+              <TouchableOpacity onPress={() => navigation.navigate("index")}>
+                <ThemedView style={styles.navigationButton}>
+                  <BlurView intensity={50} style={styles.blurContainer}>
+                    <LinearGradient
+                      colors={["#FE6292", "#E57373"]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={styles.navigationButtonGradient}
+                    >
+                      <ThemedText style={styles.navigationButtonText}>
+                        Discover
+                      </ThemedText>
+                    </LinearGradient>
+                  </BlurView>
+                </ThemedView>
+              </TouchableOpacity>
+            </ThemedView>
+          </ScrollView>
+        </SafeAreaView>
       ) : (
-        <ThemedView
+        <SafeAreaView
           style={[styles.backgroundContainer, { backgroundColor: color }]}
         >
-          <ScrollView style={styles.mainContent}>
-            <ThemedView style={styles.cardContainer}>
-              {cardData.map((card, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() =>
-                    navigation.navigate("wallpaperDetails", { card })
-                  }
-                >
-                  <WallpaperCard
-                    title={card.title}
-                    description={card.description}
-                    image={card.image}
-                    style={styles.card}
-                  />
-                </TouchableOpacity>
+          <ScrollView
+            style={{
+              paddingTop: insets.top + 100,
+              flex: 1,
+            }}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          >
+            <ThemedView
+              style={[
+                styles.cardContainer,
+                { paddingBottom: insets.bottom + 170 },
+              ]}
+            >
+              {favorites.map((category, index) => (
+                <WallpaperCard
+                  key={`${category.category}_${index}`}
+                  index={index}
+                  title={category.category}
+                  images={category.images}
+                  style={styles.card}
+                  onPress={() => {
+                    navigation.navigate("wallpaperDetails", {
+                      category,
+                      selectedImage: images[category.image],
+                      key: category.image,
+                    });
+                  }}
+                  onPressHeart={() => removeFromFavorites(category)}
+                />
               ))}
             </ThemedView>
           </ScrollView>
-        </ThemedView>
+        </SafeAreaView>
       )}
       <LinearGradient
         colors={gradientColors}
@@ -133,14 +154,11 @@ const HomeScreen = () => {
                 Welcome to
               </ThemedText>
               <ThemedText style={[styles.nameTextAppName, { color: nameText }]}>
-                Country Balls: World War
+                {metaData.app_name}
               </ThemedText>
             </ThemedView>
             <ThemedView style={styles.icon}>
-              <Image
-                source={{ uri: "https://i.redd.it/60la7vb17k811.jpg" }}
-                style={styles.icon}
-              />
+              <Image source={images[metaData.icon_url]} style={styles.icon} />
             </ThemedView>
           </ThemedView>
           <ThemedView style={styles.titleContainer}>
@@ -156,6 +174,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
+    backgroundColor: "white",
     alignItems: "center",
   },
   backgroundContainer: {
@@ -165,6 +184,31 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     position: "absolute",
+  },
+  emptyCard: {
+    width: 190,
+    height: 150,
+    borderRadius: 10,
+    marginTop: 50,
+    marginBottom: 20,
+    alignSelf: "center",
+    alignContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(153, 153, 153, 0.2)",
+  },
+  emptyTitle: {
+    fontFamily: "Beiruti",
+    fontSize: 25,
+    marginBottom: 10,
+    marginTop: 10,
+    textAlign: "center",
+    fontWeight: "800",
+  },
+  suggestionTitle: {
+    fontFamily: "Beiruti",
+    fontSize: 16,
+    paddingHorizontal: 20,
+    textAlign: "center",
   },
   overlayContainer: {
     width: "100%",
@@ -224,22 +268,43 @@ const styles = StyleSheet.create({
   cardContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-around",
-    gap: 15,
+    justifyContent: "space-evenly",
+    marginHorizontal: 10,
+    gap: 10,
     borderRadius: 20,
-    backgroundColor: "transparent",
   },
   card: {
     marginBottom: 15,
   },
   containerHeader: {
     backgroundColor: "transparent",
-    paddingTop: 40,
-    paddingHorizontal: 10,
+    paddingTop: 20,
+    paddingHorizontal: 20,
   },
   mainContent: {
     paddingTop: 220,
   },
+  navigationButtonText: {
+    fontSize: 16,
+    color: "#fff",
+    fontFamily: "Beiruti",
+  },
+  navigationButton: {
+    alignSelf: "center",
+    marginTop: 50,
+  },
+  navigationButtonGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 100,
+  },
+  blurContainer: {
+    borderRadius: 100,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+  },
 });
 
-export default HomeScreen;
+export default FavouritesScreen;

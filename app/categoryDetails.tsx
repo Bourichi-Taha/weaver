@@ -3,27 +3,28 @@ import {
   Image,
   StyleSheet,
   ScrollView,
-  Dimensions,
+  View,
+  Text,
+  TouchableOpacity,
   RefreshControl,
+  ImageBackground,
+  Alert,
 } from "react-native";
+import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import WallpaperCard from "@/components/WallpaperCard";
-import Carousel from "react-native-reanimated-carousel";
-import FastImage from "react-native-fast-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { Link, useNavigation } from "expo-router";
+import { useNavigation } from "expo-router";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useRoute } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useWindowDimensions } from "react-native";
-import { useSharedValue } from "react-native-reanimated";
-import type { ICarouselInstance } from "react-native-reanimated-carousel";
-import { images } from "../../utils/index";
-import metaData from "../../db.json";
+import metaData from "../db.json";
+import { images } from "../utils/index";
 import { useFavorites } from "@/components/favouritesContext";
 
 const HomeScreen = () => {
@@ -31,6 +32,10 @@ const HomeScreen = () => {
   const [favouriteWallpapers, setFavouriteWallpapers] = useState([]);
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
+  const route = useRoute();
+  const { category } = route.params as {
+    category: { category: string; images: string[]; icon: string };
+  };
   const color = colorScheme === "dark" ? "dark" : "light";
   const gradientColors =
     colorScheme === "dark"
@@ -40,12 +45,76 @@ const HomeScreen = () => {
     colorScheme === "dark" ? "rgba(255, 255, 255, .35)" : "rgba(0, 0, 0, .35)";
   const nameText =
     colorScheme === "dark" ? "rgba(255, 255, 255, 1)" : "rgba(0, 0, 0, 1)";
-  const windowWidth = useWindowDimensions().width;
-  const ref = React.useRef<ICarouselInstance>(null);
-  const progress = useSharedValue<number>(0);
+
+  const [categoriesData, setCategoriesData] = useState<
+    { category: string; icon: string; images: string[] }[]
+  >([]);
   const navigation = useNavigation();
   const { favorites, addToFavorites, removeFromFavorites, isFavorite } =
     useFavorites();
+
+  useEffect(() => {
+    const extractedData = metaData.categories.map((category) => ({
+      category: category.category,
+      icon: category.icon,
+      images: category.images,
+    }));
+    setCategoriesData(extractedData);
+  }, []);
+
+  /*   const handleAddToFavourites = async (category: {
+    category: string;
+    images: string[];
+  }) => {
+    try {
+      const favourites = await AsyncStorage.getItem("@userFavourites");
+      let favouritesArray = favourites ? JSON.parse(favourites) : [];
+      const newFavourite = {
+        category: category.category,
+        images: category.images,
+      };
+
+      const index = favouritesArray.findIndex(
+        (fav: { category: string }) => fav.category === category.category
+      );
+      if (index === -1) {
+        favouritesArray.push(newFavourite);
+        await AsyncStorage.setItem(
+          "@userFavourites",
+          JSON.stringify(favouritesArray)
+        );
+        Alert.alert("Success", "Added to favourites");
+      } else {
+        favouritesArray.splice(index, 1);
+        await AsyncStorage.setItem(
+          "@userFavourites",
+          JSON.stringify(favouritesArray)
+        );
+        Alert.alert("Success", "Removed from favourites");
+      }
+    } catch (error) {
+      console.error("Error adding to favourites", error);
+    }
+  };
+
+  const fetchFavourites = useCallback(async () => {
+    try {
+      const favourites = await AsyncStorage.getItem("@userFavourites");
+      const parsedFavourites = favourites ? JSON.parse(favourites) : [];
+      setFavouriteWallpapers(parsedFavourites);
+    } catch (error) {
+      console.error("Error retrieving favourites:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchFavourites();
+  }, [fetchFavourites]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchFavourites().then(() => setRefreshing(false));
+  }, [fetchFavourites]); */
 
   const handleFavoriteToggle = (category: {
     id: number;
@@ -60,85 +129,9 @@ const HomeScreen = () => {
     }
   };
 
-  /*   const handleAddToFavourites = async (category: {
-    category: string;
-    image: string;
-  }) => {
-    try {
-      const favourites = await AsyncStorage.getItem("@userFavourites");
-      let favouritesArray = favourites ? JSON.parse(favourites) : [];
-      const newFavourite = {
-        category: category.category,
-        image: category.image,
-      };
-
-      const index = favouritesArray.findIndex(
-        (fav: { category: string }) => fav.category === category.category
-      );
-      if (index === -1) {
-        favouritesArray.push(newFavourite);
-        await AsyncStorage.setItem(
-          "@userFavourites",
-          JSON.stringify(favouritesArray)
-        );
-        console.log("Added to favourites");
-      } else {
-        favouritesArray.splice(index, 1);
-        await AsyncStorage.setItem(
-          "@userFavourites",
-          JSON.stringify(favouritesArray)
-        );
-        console.log("Removed from favourites");
-      }
-    } catch (error) {
-      console.error("Error adding to favourites", error);
-    }
-  };    const handleAddToFavourites = async (item) => {
-    try {
-      const favourites = await AsyncStorage.getItem("@userFavourites");
-      const favouritesList = favourites ? JSON.parse(favourites) : [];
-      favouritesList.push(item);
-      await AsyncStorage.setItem(
-        "@userFavourites",
-        JSON.stringify(favouritesList)
-      );
-    } catch (error) {
-      console.error("Error adding to favourites:", error);
-    }
-  };
-  const fetchFavourites = useCallback(async () => {
-    try {
-      const favourites = await AsyncStorage.getItem("@userFavourites");
-      const parsedFavourites = favourites ? JSON.parse(favourites) : [];
-      setFavouriteWallpapers(parsedFavourites);
-    } catch (error) {
-      console.error("Error retrieving favourites:", error);
-    }
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
   }, []);
-
-  useEffect(() => {
-    fetchFavourites();
-  }, [fetchFavourites]); */
-
-  const onRefresh = useCallback(
-    () => {
-      setRefreshing(true); /* 
-    fetchFavourites().then(() => setRefreshing(false)); */
-    },
-    [
-      /* fetchFavourites */
-    ]
-  );
-
-  const onPressPagination = (index: number) => {
-    ref.current?.scrollTo({
-      count: index - progress.value,
-      animated: true,
-    });
-  };
-
-  const { width } = Dimensions.get("window");
-  const cardWidth = width;
 
   return (
     <ThemedView style={[styles.container]}>
@@ -147,75 +140,42 @@ const HomeScreen = () => {
       >
         <ScrollView
           style={{
-            paddingTop: insets.top + 100,
+            paddingTop: insets.top + 150,
             flex: 1,
           }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
         >
-          <ThemedView style={styles.cardSlider}>
-            <Carousel
-              style={{
-                width: Dimensions.get("window").width,
-              }}
-              data={metaData.carousel}
-              loop
-              width={windowWidth}
-              pagingEnabled={true}
-              snapEnabled={true}
-              autoPlay={true}
-              autoPlayInterval={1500}
-              mode="parallax"
-              modeConfig={{
-                parallaxScrollingScale: 0.9,
-                parallaxScrollingOffset: 50,
-              }}
-              renderItem={({ index }) => (
-                <Image
-                  source={images[metaData.carousel[index]]}
-                  style={{ width: cardWidth, height: 210, borderRadius: 20 }}
-                />
-              )}
-            />
-          </ThemedView>
           <ThemedView
             style={[
               styles.cardContainer,
-              { paddingBottom: insets.bottom + 170 },
+              { paddingBottom: insets.bottom + 200 },
             ]}
           >
-            {metaData.categories.flatMap((category) =>
-              category.images.map((image, index) => (
-                <WallpaperCard
-                  key={`${category.category}_${index}`}
-                  index={index}
-                  title={category.category}
-                  images={[images[image]]}
-                  style={styles.card}
-                  onPress={() =>
-                    navigation.navigate("wallpaperDetails", {
-                      category: {
-                        images: [images[image]],
-                        image: image,
-                        id: index,
-                        category: category.category,
-                      },
-                      selectedImage: images[image],
-                      key: image,
-                    })
-                  }
-                  onPressHeart={() =>
-                    handleFavoriteToggle({
-                      images: [images[image]],
-                      image: image,
-                      id: index,
-                      category: category.category,
-                    })
-                  }
-                />
-              ))
-            )}
+            {category.images.map((image, index) => (
+              <WallpaperCard
+                key={`${category.category}_${index}`}
+                index={index}
+                title={category.category}
+                images={[images[image]]}
+                style={styles.card}
+                onPress={() =>
+                  navigation.navigate("wallpaperDetails", {
+                    category,
+                    selectedImage: images[image],
+                  })
+                }
+                onPressHeart={() =>
+                  handleFavoriteToggle({
+                    images: [images[image]],
+                    image: image,
+                    id: index,
+                    category: category.category,
+                  })
+                }
+              />
+            ))}
           </ThemedView>
         </ScrollView>
       </SafeAreaView>
@@ -227,22 +187,17 @@ const HomeScreen = () => {
       >
         <ThemedView style={styles.containerHeader}>
           <ThemedView style={styles.header}>
-            <ThemedView style={styles.name}>
-              <ThemedText style={[styles.nameText, { color: text }]}>
-                Welcome to
-              </ThemedText>
-              <ThemedText style={[styles.nameTextAppName, { color: nameText }]}>
-                {metaData.app_name}
-              </ThemedText>
-            </ThemedView>
-            <ThemedView style={styles.icon}>
-              <Image source={images[metaData.icon_url]} style={styles.icon} />
-            </ThemedView>
-          </ThemedView>
-          <ThemedView style={styles.titleContainer}>
-            <ThemedText type="title">
-              " Spread love everywhere you go "
-            </ThemedText>
+            <View style={styles.cardImageContainer}>
+              <ImageBackground
+                source={images[category.icon]}
+                style={styles.cardImage}
+                resizeMode="cover"
+              >
+                <ThemedText style={styles.cardTitle}>
+                  {category.category}
+                </ThemedText>
+              </ImageBackground>
+            </View>
           </ThemedView>
         </ThemedView>
       </LinearGradient>
@@ -258,14 +213,15 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     height: "100%",
-    backgroundColor: "white",
     justifyContent: "center",
     alignItems: "center",
     position: "absolute",
+    paddingBottom: -50,
   },
   overlayContainer: {
     width: "100%",
     height: 230,
+    top: 0,
     justifyContent: "center",
     alignItems: "center",
     position: "absolute",
@@ -277,7 +233,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "stretch",
     backgroundColor: "transparent",
-    height: 40,
   },
   name: {
     flex: 1,
@@ -326,14 +281,42 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   card: {
-    marginTop: 20,
+    marginBottom: 15,
   },
   containerHeader: {
     backgroundColor: "transparent",
-    paddingTop: 20,
-    paddingHorizontal: 20,
   },
   mainContent: {},
+  cardImageContainer: {
+    borderRadius: 20,
+    height: 230,
+    width: "100%",
+    overflow: "hidden",
+    shadowColor: "rgb(47, 64, 85)",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
+  },
+  cardImage: {
+    flex: 1,
+    borderRadius: 20,
+    overflow: "hidden",
+  },
+  cardTitle: {
+    width: "50%",
+    color: "rgba(255,255,255,.8)",
+    fontSize: 40,
+    fontFamily: "Rancho",
+    position: "absolute",
+    top: 100,
+    left: 50,
+    zIndex: 1,
+    height: 100,
+    alignItems: "center",
+    justifyContent: "center",
+    lineHeight: 45,
+  },
 });
 
 export default HomeScreen;

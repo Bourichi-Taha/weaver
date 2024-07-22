@@ -7,8 +7,18 @@
       "react-native-image-slider-box": [
         "./types/react-native-image-slider-box.d.ts"
       ],
-      "@gorhom/bottom-sheet": ["./node_modules/@gorhom/bottom-sheet"]
+      "@gorhom/bottom-sheet": ["./node_modules/@gorhom/bottom-sheet"],
+      "react-native-manage-wallpaper": [
+        "./types/react-native-manage-wallpaper.d.ts"
+      ],
+      "react-native-set-wallpaper": ["./types/react-native-set-wallpaper.d.ts"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "utils/applicationIcon.jsx"
+  ]
 }
