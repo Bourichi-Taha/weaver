@@ -5,16 +5,19 @@ import {
   TouchableOpacity,
   Platform,
   Dimensions,
+  View,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ThemedView } from "@/components/ThemedView";
+import { useFavorites } from "./favouritesContext";
 
 interface WallpaperCardProps {
   index: number;
   title: string;
   images: string[];
+  image: string;
   onPress: () => void;
   onPressHeart: () => void;
+  isFavorite: boolean;
   style?: object | number | Array<object | number>;
 }
 
@@ -25,8 +28,10 @@ const WallpaperCard: React.FC<WallpaperCardProps> = ({
   index,
   title,
   images,
+  image,
   onPress,
   onPressHeart,
+  isFavorite,
 }) => {
   const shadowStyle = Platform.select({
     ios: {
@@ -50,6 +55,13 @@ const WallpaperCard: React.FC<WallpaperCardProps> = ({
   const [isFavourite, setIsFavourite] = useState(false);
   const currentImage = images[currentImageIndex];
 
+  const category = {
+    id: index,
+    images: images,
+    category: title,
+    image: image,
+  };
+
   useEffect(() => {
     const checkIfFavourite = async () => {
       try {
@@ -68,22 +80,35 @@ const WallpaperCard: React.FC<WallpaperCardProps> = ({
     onPressHeart();
     setIsFavourite(!isFavourite);
   };
+  const { favorites, addToFavorites, removeFromFavorites } = useFavorites();
 
   return (
-    <ThemedView style={[styles.card, shadowStyle]}>
+    <View style={[styles.card, shadowStyle]}>
       <TouchableOpacity style={[styles.card, shadowStyle]} onPress={onPress}>
         <Image source={currentImage} style={styles.cardImage} />
       </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.likeButton, isFavourite && styles.likeButtonActive]}
-        onPress={handleToggleFavourite}
-      >
-        <Image
-          source={require("../assets/images/icons/icons8-favorite-100.png")}
-          style={styles.likeButtonImage}
-        />
-      </TouchableOpacity>
-    </ThemedView>
+      {!isFavorite ? (
+        <TouchableOpacity
+          style={[styles.likeButton]}
+          onPress={() => onPressHeart()}
+        >
+          <Image
+            source={require("../assets/images/icons/icons8-favorite-100.png")}
+            style={styles.likeButtonImage}
+          />
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          style={[styles.likeButton]}
+          onPress={() => onPressHeart()}
+        >
+          <Image
+            source={require("../assets/images/icons/icons8-dislike-100.png")}
+            style={styles.likeButtonImage}
+          />
+        </TouchableOpacity>
+      )}
+    </View>
   );
 };
 
@@ -107,10 +132,6 @@ const styles = StyleSheet.create({
     width: 35,
     height: 35,
     tintColor: "white",
-  },
-  likeButtonActive: {
-    backgroundColor: "rgba(234, 110, 127, .9)",
-    borderRadius: 50,
   },
   likeButtonImage: {
     width: 35,

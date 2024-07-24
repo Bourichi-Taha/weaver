@@ -1,13 +1,11 @@
 import { Tabs } from "expo-router";
 import React from "react";
-
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { BlurView } from "expo-blur";
-import { StyleSheet } from "react-native";
-import { ThemedView } from "@/components/ThemedView";
+import { Platform, StyleSheet, View } from "react-native";
 import index from "./index";
 import favourites from "./favourites";
 import categories from "./categories";
@@ -30,7 +28,15 @@ const TabLayout = () => {
           {
             display: "flex",
             position: "absolute",
-            bottom: 0,
+            ...Platform.select({
+              ios: {
+                bottom: 0,
+              },
+              android: {
+                height: 65,
+                paddingBottom: 25,
+              },
+            }),
             left: 0,
             right: 0,
             borderTopLeftRadius: 20,
@@ -73,7 +79,7 @@ const TabLayout = () => {
         options={{
           title: "Home",
           tabBarIcon: ({ focused }) => (
-            <ThemedView
+            <View
               style={
                 focused ? styles.iconContainerFocused : styles.iconContainer
               }
@@ -83,7 +89,7 @@ const TabLayout = () => {
                 color={focused ? "#FFFFFF" : "#999999"}
                 focused={focused}
               />
-            </ThemedView>
+            </View>
           ),
         }}
       />
@@ -93,7 +99,7 @@ const TabLayout = () => {
         options={{
           title: "Favourites",
           tabBarIcon: ({ focused }) => (
-            <ThemedView
+            <View
               style={
                 focused ? styles.iconContainerFocused : styles.iconContainer
               }
@@ -103,7 +109,7 @@ const TabLayout = () => {
                 color={focused ? "#FFFFFF" : "#999999"}
                 focused={focused}
               />
-            </ThemedView>
+            </View>
           ),
         }}
       />
@@ -113,7 +119,7 @@ const TabLayout = () => {
         options={{
           title: "Categories",
           tabBarIcon: ({ focused }) => (
-            <ThemedView
+            <View
               style={
                 focused ? styles.iconContainerFocused : styles.iconContainer
               }
@@ -123,7 +129,7 @@ const TabLayout = () => {
                 color={focused ? "#FFFFFF" : "#999999"}
                 focused={focused}
               />
-            </ThemedView>
+            </View>
           ),
         }}
       />
@@ -133,7 +139,7 @@ const TabLayout = () => {
         options={{
           title: "Profile",
           tabBarIcon: ({ focused }) => (
-            <ThemedView
+            <View
               style={
                 focused ? styles.iconContainerFocused : styles.iconContainer
               }
@@ -143,7 +149,7 @@ const TabLayout = () => {
                 color={focused ? "#FFFFFF" : "#999999"}
                 focused={focused}
               />
-            </ThemedView>
+            </View>
           ),
         }}
       />

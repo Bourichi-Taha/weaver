@@ -4,6 +4,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
+  Text,
   Dimensions,
   Alert,
   ActivityIndicator,
@@ -19,15 +20,14 @@ import Animated, {
 } from "react-native-reanimated";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
-import { ThemedText } from "@/components/ThemedText";
 import * as MediaLibrary from "expo-media-library";
 import { Share } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { images } from "../utils/index";
 import * as FileSystem from "expo-file-system";
 import { Asset } from "expo-asset";
-import WallPaperManager from "react-native-set-wallpaper";
-/* import WallPaperManager from "react-native-wallpaper-manager";*/
+/* import WallPaperManager from "react-native-set-wallpaper";
+ */ /* import WallPaperManager from "react-native-wallpaper-manager";*/
 import { useFavorites } from "@/components/favouritesContext";
 
 const windowHeight = Dimensions.get("window").height;
@@ -37,7 +37,7 @@ const BookDetailScreen: React.FC = () => {
   const colorScheme = useColorScheme() ?? "light";
   const route = useRoute();
   const { category, selectedImage, key } = route.params as {
-    category: { images; image; id; category };
+    category: { id: number; images: string[]; category: string; image: string };
     selectedImage: string;
     key: string;
   };
@@ -54,7 +54,7 @@ const BookDetailScreen: React.FC = () => {
   if (!category || !category.images) {
     return (
       <View style={styles.container}>
-        <ThemedText>Error: Invalid category or images</ThemedText>
+        <Text>Error: Invalid category or images</Text>
       </View>
     );
   }
@@ -159,7 +159,7 @@ const BookDetailScreen: React.FC = () => {
     console.log("Response: ", res);
   };
 
-  const handleSetWallpaper = (imageKey: string) => {
+  /*   const handleSetWallpaper = (imageKey: string) => {
     try {
       const imageAsset = images[imageKey];
       if (!imageAsset) {
@@ -173,25 +173,37 @@ const BookDetailScreen: React.FC = () => {
         console.log(res);
       });
 
-      /* ManageWallpaper.setWallpaper(
+       ManageWallpaper.setWallpaper(
         {
           uri: asset,
         },
         (res) => console.log("Wallpaper set:", res),
         TYPE.HOME
-      ); */
+      );
 
       Alert.alert("Success", "Wallpaper set successfully!");
     } catch (error) {
       Alert.alert("Error", "Failed to set wallpaper.");
       console.error("Failed to set wallpaper", error);
     }
-  };
+  }; */
 
-  const handleShare = async (image: string) => {
+  const handleShare = async (imageKey: string) => {
     try {
+      const imageAsset = images[imageKey];
+      if (!imageAsset) {
+        throw new Error(`Image not found for key: ${imageKey}`);
+      }
+
+      const asset = Asset.fromModule(imageAsset);
+      await asset.downloadAsync();
+      const imageUri = asset.localUri;
+
+      if (!imageUri) {
+        throw new Error(`Failed to resolve URI for image: ${imageKey}`);
+      }
       const result = await Share.share({
-        url: images[image],
+        url: imageUri,
       });
 
       if (result.action === Share.sharedAction) {
@@ -204,6 +216,7 @@ const BookDetailScreen: React.FC = () => {
         console.log("Dismissed");
       }
     } catch (error) {
+      Alert.alert("Error", "Failed to share image.");
       console.error("Error sharing image:", error);
     }
   };
@@ -270,7 +283,12 @@ const BookDetailScreen: React.FC = () => {
             width: 50,
             zIndex: 10,
             overflow: "hidden",
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
+            ...Platform.select({
+              ios: { backgroundColor: "rgba(255, 255, 255, 0.5)" },
+              android: {
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+              },
+            }),
           }}
         >
           <TouchableOpacity
@@ -307,12 +325,24 @@ const BookDetailScreen: React.FC = () => {
             flex: 1,
             flexDirection: "row",
             alignItems: "center",
-            justifyContent: "center",
+            ...Platform.select({
+              ios: {
+                justifyContent: "center",
+              },
+              android: {
+                justifyContent: "space-evenly",
+              },
+            }),
             width: "100%",
             height: 100,
             overflow: "hidden",
             zIndex: 10,
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
+            ...Platform.select({
+              ios: { backgroundColor: "rgba(255, 255, 255, 0.5)" },
+              android: {
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+              },
+            }),
           }}
         >
           <TouchableOpacity
@@ -325,18 +355,35 @@ const BookDetailScreen: React.FC = () => {
               end={{ x: 1, y: 0 }}
               style={styles.optionButton}
             >
-              <Image
-                source={require("../assets/images/icons/icons8-favorite-100.png")}
-                style={{
-                  width: 30,
-                  height: 30,
-                  tintColor: "white",
-                }}
-              />
+              {!isFavorite(category) ? (
+                <View>
+                  <Image
+                    source={require("../assets/images/icons/icons8-favorite-100.png")}
+                    style={{
+                      width: 30,
+                      height: 30,
+                      tintColor: "white",
+                    }}
+                  />
+                </View>
+              ) : (
+                <Image
+                  source={require("../assets/images/icons/icons8-dislike-100.png")}
+                  style={{
+                    width: 30,
+                    height: 30,
+                    tintColor: "white",
+                  }}
+                />
+              )}
             </LinearGradient>
-            <ThemedText style={[styles.optionText, { color: "white" }]}>
-              Like
-            </ThemedText>
+            {!isFavorite(category) ? (
+              <Text style={[styles.optionText, { color: "white" }]}>Like</Text>
+            ) : (
+              <Text style={[styles.optionText, { color: "white" }]}>
+                Dislike
+              </Text>
+            )}
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.optionButton}
@@ -364,11 +411,9 @@ const BookDetailScreen: React.FC = () => {
                 />
               )}
             </LinearGradient>
-            <ThemedText style={[styles.optionText, { color: "white" }]}>
-              Save
-            </ThemedText>
+            <Text style={[styles.optionText, { color: "white" }]}>Save</Text>
           </TouchableOpacity>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.optionButton}
             onPress={() => handleSetWallpaper(key)}
           >
@@ -387,13 +432,13 @@ const BookDetailScreen: React.FC = () => {
                 }}
               />
             </LinearGradient>
-            <ThemedText style={[styles.optionText, { color: "white" }]}>
+            <Text style={[styles.optionText, { color: "white" }]}>
               Set as
-            </ThemedText>
-          </TouchableOpacity>
+            </Text>
+          </TouchableOpacity> */}
           <TouchableOpacity
             style={styles.optionButton}
-            onPress={() => handleShare(selectedImage)}
+            onPress={() => handleShare(key)}
           >
             <LinearGradient
               colors={["#FE6292", "#E57373"]}
@@ -410,9 +455,7 @@ const BookDetailScreen: React.FC = () => {
                 }}
               />
             </LinearGradient>
-            <ThemedText style={[styles.optionText, { color: "white" }]}>
-              Share
-            </ThemedText>
+            <Text style={[styles.optionText, { color: "white" }]}>Share</Text>
           </TouchableOpacity>
         </BlurView>
       </View>
@@ -499,8 +542,7 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
-    fontFamily: "beiruti",
-    fontWeight: "800",
+    fontFamily: "Beiruti",
     marginHorizontal: -20,
   },
 });

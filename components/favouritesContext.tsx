@@ -72,13 +72,23 @@ export const FavoritesProvider: React.FC<FavoritesProviderProps> = ({
   };
 
   const removeFromFavorites = (item: Category) => {
-    const newFavorites = favorites.filter((fav) => fav.id !== item.id);
+    const newFavorites = favorites.filter(
+      (fav) =>
+        fav.id !== item.id ||
+        fav.category !== item.category ||
+        fav.image !== item.image
+    );
     setFavorites(newFavorites);
     saveFavorites(newFavorites);
   };
 
   const isFavorite = (item: Category) => {
-    return favorites.some((fav) => fav.id === item.id);
+    return favorites.some(
+      (fav) =>
+        fav.id === item.id &&
+        fav.category === item.category &&
+        fav.image === item.image
+    );
   };
 
   return (

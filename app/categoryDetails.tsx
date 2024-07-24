@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import {
   Image,
   StyleSheet,
+  Platform,
   ScrollView,
   View,
   Text,
@@ -11,8 +12,6 @@ import {
   Alert,
 } from "react-native";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 import WallpaperCard from "@/components/WallpaperCard";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "expo-router";
@@ -134,20 +133,27 @@ const HomeScreen = () => {
   }, []);
 
   return (
-    <ThemedView style={[styles.container]}>
+    <View style={[styles.container]}>
       <SafeAreaView
         style={[styles.backgroundContainer, { backgroundColor: color }]}
       >
         <ScrollView
           style={{
-            paddingTop: insets.top + 150,
+            ...Platform.select({
+              ios: {
+                paddingTop: insets.top + 150,
+              },
+              android: {
+                paddingTop: insets.top + 200,
+              },
+            }),
             flex: 1,
           }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
         >
-          <ThemedView
+          <View
             style={[
               styles.cardContainer,
               { paddingBottom: insets.bottom + 200 },
@@ -159,24 +165,54 @@ const HomeScreen = () => {
                 index={index}
                 title={category.category}
                 images={[images[image]]}
+                image={image}
+                isFavorite={isFavorite({
+                  images: [images[image]],
+                  image: image,
+                  id: index,
+                  category: category.category,
+                })}
                 style={styles.card}
                 onPress={() =>
                   navigation.navigate("wallpaperDetails", {
-                    category,
+                    category: {
+                      images: [images[image]],
+                      image: image,
+                      id: index,
+                      category: category.category,
+                    },
                     selectedImage: images[image],
                   })
                 }
-                onPressHeart={() =>
-                  handleFavoriteToggle({
-                    images: [images[image]],
-                    image: image,
-                    id: index,
-                    category: category.category,
-                  })
-                }
+                onPressHeart={() => {
+                  if (
+                    !isFavorite({
+                      images: [images[image]],
+                      image: image,
+                      id: index,
+                      category: category.category,
+                    })
+                  ) {
+                    addToFavorites({
+                      images: [images[image]],
+                      image: image,
+                      id: index,
+                      category: category.category,
+                    });
+                  } else {
+                    {
+                      removeFromFavorites({
+                        images: [images[image]],
+                        image: image,
+                        id: index,
+                        category: category.category,
+                      });
+                    }
+                  }
+                }}
               />
             ))}
-          </ThemedView>
+          </View>
         </ScrollView>
       </SafeAreaView>
 
@@ -185,23 +221,21 @@ const HomeScreen = () => {
         locations={[0, 0.7, 1]}
         style={styles.overlayContainer}
       >
-        <ThemedView style={styles.containerHeader}>
-          <ThemedView style={styles.header}>
+        <View style={styles.containerHeader}>
+          <View style={styles.header}>
             <View style={styles.cardImageContainer}>
               <ImageBackground
                 source={images[category.icon]}
                 style={styles.cardImage}
                 resizeMode="cover"
               >
-                <ThemedText style={styles.cardTitle}>
-                  {category.category}
-                </ThemedText>
+                <Text style={styles.cardTitle}>{category.category}</Text>
               </ImageBackground>
             </View>
-          </ThemedView>
-        </ThemedView>
+          </View>
+        </View>
       </LinearGradient>
-    </ThemedView>
+    </View>
   );
 };
 
@@ -247,7 +281,6 @@ const styles = StyleSheet.create({
   nameText: {
     textAlign: "left",
     paddingVertical: 0,
-    fontWeight: "bold",
     fontSize: 20,
     marginLeft: 0,
     fontFamily: "Beiruti",
@@ -255,7 +288,6 @@ const styles = StyleSheet.create({
   nameTextAppName: {
     textAlign: "left",
     paddingVertical: 0,
-    fontWeight: "500",
     fontSize: 21,
     fontFamily: "Beiruti",
   },
@@ -288,10 +320,11 @@ const styles = StyleSheet.create({
   },
   mainContent: {},
   cardImageContainer: {
-    borderRadius: 20,
     height: 230,
     width: "100%",
     overflow: "hidden",
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
     shadowColor: "rgb(47, 64, 85)",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
@@ -300,8 +333,9 @@ const styles = StyleSheet.create({
   },
   cardImage: {
     flex: 1,
-    borderRadius: 20,
     overflow: "hidden",
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   cardTitle: {
     width: "50%",

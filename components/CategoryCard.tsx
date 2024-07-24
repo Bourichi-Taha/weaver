@@ -4,11 +4,10 @@ import {
   StyleSheet,
   Platform,
   View,
+  Text,
   ImageBackground,
   TouchableOpacity,
 } from "react-native";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 import { LinearGradient } from "expo-linear-gradient";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
@@ -64,7 +63,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
         end={{ x: 1, y: 0.25 }}
         style={styles.overlayContainer}
       >
-        <ThemedText style={styles.cardTitle}>{title}</ThemedText>
+        <Text style={styles.cardTitle}>{title}</Text>
       </LinearGradient>
     </TouchableOpacity>
   );

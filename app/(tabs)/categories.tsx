@@ -12,8 +12,6 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 import CategoryCard from "@/components/CategoryCard";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { LinearGradient } from "expo-linear-gradient";
@@ -42,20 +40,36 @@ export default function HomeScreen() {
   const navigation = useNavigation();
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={styles.container}>
       <SafeAreaView
         style={[styles.backgroundContainer, { backgroundColor: color }]}
       >
         <ScrollView
           style={{
-            paddingTop: insets.top + 100,
+            ...Platform.select({
+              ios: {
+                paddingTop: insets.top + 100,
+              },
+              android: {
+                paddingTop: insets.top + 150,
+              },
+            }),
             flex: 1,
           }}
         >
-          <ThemedView
+          <View
             style={[
               styles.cardContainer,
-              { paddingBottom: insets.bottom + 170 },
+              {
+                ...Platform.select({
+                  ios: {
+                    paddingBottom: insets.bottom + 170,
+                  },
+                  android: {
+                    paddingBottom: insets.bottom + 250,
+                  },
+                }),
+              },
             ]}
           >
             {metaData.categories.map((category, index) => (
@@ -70,7 +84,7 @@ export default function HomeScreen() {
                 }}
               />
             ))}
-          </ThemedView>
+          </View>
         </ScrollView>
       </SafeAreaView>
       <LinearGradient
@@ -78,26 +92,24 @@ export default function HomeScreen() {
         locations={[0, 0.7, 1]}
         style={styles.overlayContainer}
       >
-        <ThemedView style={styles.containerHeader}>
-          <ThemedView style={styles.header}>
-            <ThemedView style={styles.name}>
-              <ThemedText style={[styles.nameText, { color: text }]}>
-                Welcome to
-              </ThemedText>
-              <ThemedText style={[styles.nameTextAppName, { color: nameText }]}>
+        <View style={styles.containerHeader}>
+          <View style={styles.header}>
+            <View style={styles.name}>
+              <Text style={[styles.nameText, { color: text }]}>Welcome to</Text>
+              <Text style={[styles.nameTextAppName, { color: nameText }]}>
                 {metaData.app_name}
-              </ThemedText>
-            </ThemedView>
-            <ThemedView style={styles.icon}>
+              </Text>
+            </View>
+            <View style={styles.icon}>
               <Image source={images[metaData.icon_url]} style={styles.icon} />
-            </ThemedView>
-          </ThemedView>
-          <ThemedView style={styles.titleContainer}>
-            <ThemedText type="title">Wallpaper categories</ThemedText>
-          </ThemedView>
-        </ThemedView>
+            </View>
+          </View>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>" Themes for every taste "</Text>
+          </View>
+        </View>
       </LinearGradient>
-    </ThemedView>
+    </View>
   );
 }
 
@@ -145,7 +157,6 @@ const styles = StyleSheet.create({
   nameText: {
     textAlign: "left",
     paddingVertical: 0,
-    fontWeight: "bold",
     fontSize: 20,
     marginLeft: 0,
     fontFamily: "Beiruti",
@@ -153,7 +164,6 @@ const styles = StyleSheet.create({
   nameTextAppName: {
     textAlign: "left",
     paddingVertical: 0,
-    fontWeight: "500",
     fontSize: 21,
     fontFamily: "Beiruti",
   },
@@ -183,5 +193,11 @@ const styles = StyleSheet.create({
   },
   mainContent: {
     paddingTop: 220,
+  },
+  title: {
+    fontSize: 32,
+    lineHeight: 32,
+    fontFamily: "Rancho",
+    textAlign: "center",
   },
 });

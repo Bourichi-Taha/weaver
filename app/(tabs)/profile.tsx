@@ -5,10 +5,9 @@ import {
   Platform,
   Text,
   Share,
+  View,
 } from "react-native";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import React, {
@@ -32,12 +31,22 @@ import type { BottomSheetDefaultBackdropProps } from "../../node_modules/@gorhom
 import WebView from "react-native-webview";
 import Constants from "expo-constants";
 import * as WebBrowser from "expo-web-browser";
-import * as Google from "expo-auth-session/providers/google";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+/* import * as Google from "expo-auth-session/providers/google";
+ */ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Linking from "expo-linking";
+/* import { AdMobBanner } from "expo-ads-admob";
+ */
+/* import {
+  BannerAd,
+  BannerAdSize,
+  TestIds,
+} from "react-native-google-mobile-ads"; */
+import { images } from "../../utils/index";
+import metaData from "../../db.json";
+/* import InlineAd from "@/components/InlineAd"; */
 
-WebBrowser.maybeCompleteAuthSession();
-
+/* WebBrowser.maybeCompleteAuthSession();
+ */
 export default function HomeScreen() {
   const rateModalRef = useRef<BottomSheetModal>(null);
   const contactModalRef = useRef<BottomSheetModal>(null);
@@ -57,8 +66,12 @@ export default function HomeScreen() {
   const themedHandleStyle = colorScheme === "dark" ? "#474747" : "#404040";
   const themedCursorStyle = colorScheme === "dark" ? "#474747" : "#404040";
 
-  const [userInfo, setUserInfo] = useState<{ picture?: string } | null>(null);
-  const [isSignedIn, setIsSignedIn] = useState(false);
+  /* const [userInfo, setUserInfo] = useState<{ picture?: string } | null>(null);
+  const [isSignedIn, setIsSignedIn] = useState(false); */
+
+  /* const adUnitId = __DEV__
+    ? TestIds.ADAPTIVE_BANNER
+    : "ca-app-pub-3940256099942544/2435281174"; */
 
   const getRedirectUri = () => {
     if (Constants.platform && Constants.platform.ios) {
@@ -78,7 +91,7 @@ export default function HomeScreen() {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
+  /* const [request, response, promptAsync] = Google.useAuthRequest({
     iosClientId:
       "146135389195-jdm7rqvl81ls8va9hb0jippsdghpoiog.apps.googleusercontent.com",
     androidClientId:
@@ -141,7 +154,7 @@ export default function HomeScreen() {
       console.error("Error signing out:", error);
     }
   };
-
+ */
   const handleRateStart = useCallback(() => {
     rateModalRef.current?.present();
   }, []);
@@ -235,87 +248,10 @@ export default function HomeScreen() {
     []
   );
 
-  const renderGoogleIcon = () => {
-    if (userInfo && userInfo.picture) {
-      return (
-        <Image
-          source={{ uri: userInfo.picture }}
-          style={{
-            width: 100,
-            height: 100,
-            borderRadius: 50,
-          }}
-        />
-      );
-    } else {
-      return (
-        <Image
-          source={require("../../assets/images/icons/icons8-male-user-100.png")}
-          style={{
-            width: 90,
-            height: 90,
-            opacity: 0.15,
-            tintColor: color,
-          }}
-        />
-      );
-    }
-  };
-
-  const renderGoogleButton = () => {
-    if (isSignedIn) {
-      return (
-        <TouchableOpacity onPress={handleSignOut}>
-          <ThemedView style={styles.googleButton}>
-            <BlurView intensity={50} style={styles.blurContainer}>
-              <LinearGradient
-                colors={["#FE6292", "#E57373"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.googleButtonGradient}
-              >
-                <Image
-                  source={require("../../assets/images/icons/icons8-google-100.png")}
-                  style={styles.googleIcon}
-                />
-                <ThemedText style={styles.googleButtonText}>
-                  Sign Out
-                </ThemedText>
-              </LinearGradient>
-            </BlurView>
-          </ThemedView>
-        </TouchableOpacity>
-      );
-    } else {
-      return (
-        <TouchableOpacity disabled={!request} onPress={() => promptAsync()}>
-          <ThemedView style={styles.googleButton}>
-            <BlurView intensity={50} style={styles.blurContainer}>
-              <LinearGradient
-                colors={["#FE6292", "#E57373"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.googleButtonGradient}
-              >
-                <Image
-                  source={require("../../assets/images/icons/icons8-google-100.png")}
-                  style={styles.googleIcon}
-                />
-                <ThemedText style={styles.googleButtonText}>
-                  Sign in with Google
-                </ThemedText>
-              </LinearGradient>
-            </BlurView>
-          </ThemedView>
-        </TouchableOpacity>
-      );
-    }
-  };
-
   return (
     <GestureHandlerRootView>
       <ParallaxScrollView
-        headerBackgroundColor={{ light: "#fff", dark: "#222222" }}
+        headerBackgroundColor={{ light: "white", dark: "#222222" }}
         headerImage={
           <Image
             source={require("@/assets/images/partial-react-logo.png")}
@@ -323,15 +259,32 @@ export default function HomeScreen() {
           />
         }
       >
-        <ThemedView style={styles.profileSection}>
-          <ThemedView style={styles.profileImageSection}>
-            {renderGoogleIcon()}
-          </ThemedView>
-          {renderGoogleButton()}
-        </ThemedView>
-
-        <ThemedView style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>Support us</ThemedText>
+        <View style={styles.profileSection}>
+          <View style={styles.profileImageSection}>
+            <Image
+              source={images[metaData.icon_url]}
+              style={{
+                width: 100,
+                height: 100,
+                borderRadius: 50,
+              }}
+            />
+          </View>
+          <View style={styles.googleButton}>
+            <Text style={styles.googleButtonText}>{metaData.app_name}</Text>
+          </View>
+        </View>
+        {/*        <InlineAd/> */}
+        {/*         <View>
+         */}
+        {/* <BannerAd
+            ref={bannerRef}
+            unitId={adUnitId}
+            size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+          /> */}
+        {/* </View> */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Support us</Text>
           <TouchableOpacity
             style={styles.sectionItem}
             onPress={handleRateStart}
@@ -340,9 +293,9 @@ export default function HomeScreen() {
               source={require("../../assets/images/icons/icons8-star-100.png")}
               style={[styles.iconImage, { tintColor: color }]}
             />
-            <ThemedText style={[styles.sectionItemText, { color: color }]}>
+            <Text style={[styles.sectionItemText, { color: color }]}>
               Rate Us
-            </ThemedText>
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.sectionItem}
@@ -352,22 +305,22 @@ export default function HomeScreen() {
               source={require("../../assets/images/icons/icons8-mail-100.png")}
               style={[styles.iconImage, { tintColor: color }]}
             />
-            <ThemedText style={[styles.sectionItemText, { color: color }]}>
+            <Text style={[styles.sectionItemText, { color: color }]}>
               Contact Us
-            </ThemedText>
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.sectionItem} onPress={shareApp}>
             <Image
               source={require("../../assets/images/icons/icons8-share-100.png")}
               style={[styles.iconImage, { tintColor: color }]}
             />
-            <ThemedText style={[styles.sectionItemText, { color: color }]}>
+            <Text style={[styles.sectionItemText, { color: color }]}>
               Share with Friends
-            </ThemedText>
+            </Text>
           </TouchableOpacity>
-        </ThemedView>
-        <ThemedView style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>About</ThemedText>
+        </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>About</Text>
           <TouchableOpacity
             style={styles.sectionItem}
             onPress={handleAboutStart}
@@ -376,9 +329,9 @@ export default function HomeScreen() {
               source={require("../../assets/images/icons/icons8-info-100.png")}
               style={[styles.iconImage, { tintColor: color }]}
             />
-            <ThemedText style={[styles.sectionItemText, { color: color }]}>
+            <Text style={[styles.sectionItemText, { color: color }]}>
               About us
-            </ThemedText>
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.sectionItem}
@@ -388,9 +341,9 @@ export default function HomeScreen() {
               source={require("../../assets/images/icons/icons8-protect-100.png")}
               style={[styles.iconImage, { tintColor: color }]}
             />
-            <ThemedText style={[styles.sectionItemText, { color: color }]}>
+            <Text style={[styles.sectionItemText, { color: color }]}>
               Terms of Use
-            </ThemedText>
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.sectionItem}
@@ -400,17 +353,17 @@ export default function HomeScreen() {
               source={require("../../assets/images/icons/icons8-security-lock-100.png")}
               style={[styles.iconImage, { tintColor: color }]}
             />
-            <ThemedText style={[styles.sectionItemText, { color: color }]}>
+            <Text style={[styles.sectionItemText, { color: color }]}>
               Privacy Policy
-            </ThemedText>
+            </Text>
           </TouchableOpacity>
 
-          <ThemedView style={styles.sectionCopyright}>
-            <ThemedText style={[styles.sectionCopyrightText, { color: color }]}>
+          <View style={styles.sectionCopyright}>
+            <Text style={[styles.sectionCopyrightText, { color: color }]}>
               Generated by Mobtwin
-            </ThemedText>
-          </ThemedView>
-          <ThemedView style={styles.sectionCopyrightContent}>
+            </Text>
+          </View>
+          <View style={styles.sectionCopyrightContent}>
             <TouchableOpacity
               style={styles.copyrightContent}
               onPress={handlePress}
@@ -430,11 +383,11 @@ export default function HomeScreen() {
                 end={{ x: 1, y: 0 }}
                 style={styles.generatorGradient}
               >
-                <ThemedText style={styles.generatorText}>AI Builder</ThemedText>
+                <Text style={styles.generatorText}>AI Builder</Text>
               </LinearGradient>
             </TouchableOpacity>
-          </ThemedView>
-        </ThemedView>
+          </View>
+        </View>
       </ParallaxScrollView>
 
       <BottomSheetModalProvider>
@@ -453,11 +406,9 @@ export default function HomeScreen() {
               { backgroundColor: themedSheetColor },
             ]}
           >
-            <ThemedText style={styles.titleText}>Enjoying Mobtwin?</ThemedText>
-            <ThemedText style={styles.subTitleText}>
-              Help us expand and improve!
-            </ThemedText>
-            <ThemedView style={styles.buttonsContainer}>
+            <Text style={styles.titleText}>Enjoying Mobtwin?</Text>
+            <Text style={styles.subTitleText}>Help us expand and improve!</Text>
+            <View style={styles.buttonsContainer}>
               <TouchableOpacity
                 style={styles.optionButton}
                 onPress={handleFeedbackPress}
@@ -500,7 +451,7 @@ export default function HomeScreen() {
                   <Text style={styles.buttonText}>5 Stars Rate</Text>
                 </LinearGradient>
               </TouchableOpacity>
-            </ThemedView>
+            </View>
           </BottomSheetView>
         </BottomSheetModal>
 
@@ -520,9 +471,7 @@ export default function HomeScreen() {
               { backgroundColor: themedSheetColor },
             ]}
           >
-            <ThemedText style={styles.feedbackText}>
-              Give your opinion
-            </ThemedText>
+            <Text style={styles.feedbackText}>Give your opinion</Text>
             <BottomSheetTextInput
               style={styles.input}
               placeholder="Your Email"
@@ -556,7 +505,7 @@ export default function HomeScreen() {
                 end={{ x: 1, y: 0 }}
                 style={styles.submitButton}
               >
-                <ThemedText style={styles.submitText}>Submit</ThemedText>
+                <Text style={styles.submitText}>Submit</Text>
               </LinearGradient>
             </TouchableOpacity>
           </BottomSheetView>
@@ -577,7 +526,7 @@ export default function HomeScreen() {
               { backgroundColor: themedSheetColor },
             ]}
           >
-            <ThemedText style={styles.titleText}>About Mobtwin</ThemedText>
+            <Text style={styles.titleText}>About Mobtwin</Text>
           </BottomSheetView>
         </BottomSheetModal>
 
@@ -596,9 +545,7 @@ export default function HomeScreen() {
               { backgroundColor: themedSheetColor },
             ]}
           >
-            <ThemedText style={styles.titleText}>
-              Terms and Conditions
-            </ThemedText>
+            <Text style={styles.titleText}>Terms and Conditions</Text>
           </BottomSheetView>
           <WebView source={{ uri: "https://www.google.co.uk/" }} />
         </BottomSheetModal>
@@ -618,7 +565,7 @@ export default function HomeScreen() {
               { backgroundColor: themedSheetColor },
             ]}
           >
-            <ThemedText style={styles.titleText}>Privacy Policy</ThemedText>
+            <Text style={styles.titleText}>Privacy Policy</Text>
           </BottomSheetView>
           <WebView source={{ uri: "https://www.google.co.uk/" }} />
         </BottomSheetModal>
@@ -640,7 +587,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "white",
   },
   header: {
     flexDirection: "row",
@@ -651,7 +598,6 @@ const styles = StyleSheet.create({
     color: "black",
     fontFamily: "Beiruti",
     fontSize: 18,
-    fontWeight: "800",
   },
   settingsIcon: {
     padding: 8,
@@ -659,6 +605,7 @@ const styles = StyleSheet.create({
   profileSection: {
     alignItems: "center",
     padding: 16,
+    backgroundColor: "white",
   },
   profileImageSection: {
     width: 100,
@@ -666,9 +613,9 @@ const styles = StyleSheet.create({
     borderRadius: 90,
     marginTop: 10,
     marginBottom: 10,
-    backgroundColor: "rgba(129, 129, 129, .15)",
     alignItems: "center",
     justifyContent: "center",
+    alignSelf: "center",
   },
   googleIcon: {
     width: 22,
@@ -676,13 +623,15 @@ const styles = StyleSheet.create({
     tintColor: "white",
   },
   googleButtonText: {
-    fontSize: 16,
-    color: "#fff",
+    fontSize: 26,
     fontFamily: "Beiruti",
     marginLeft: 8,
+    textAlign: "center",
+    alignSelf: "center",
   },
   googleButton: {
     marginTop: 0,
+    alignSelf: "center",
   },
   googleButtonGradient: {
     flexDirection: "row",
@@ -704,7 +653,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: "Beiruti",
     marginBottom: 15,
-    fontWeight: "500",
   },
   sectionItem: {
     flexDirection: "row",
@@ -721,7 +669,6 @@ const styles = StyleSheet.create({
     fontFamily: "Beiruti",
     marginLeft: 20,
     flex: 1,
-    fontWeight: "400",
   },
   sectionCopyright: {
     flexDirection: "row",
@@ -735,7 +682,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Beiruti",
     flex: 1,
-    fontWeight: "400",
   },
   generatorText: {
     fontSize: 12,
@@ -777,16 +723,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontFamily: "Beiruti",
     textAlign: "center",
-    padding: 10,
   },
   subTitleText: {
     color: "rgba(0,0,0,0.5)",
     fontSize: 30,
-    padding: 10,
     fontFamily: "Beiruti",
     marginBottom: 12,
     textAlign: "center",
-    fontWeight: "800",
   },
   cuteText: {
     color: "rgba(0,0,0,0.5)",
@@ -800,7 +743,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     gap: 15,
     position: "absolute",
-    bottom: 120,
+    ...Platform.select({
+      ios: { bottom: 120 },
+      android: {
+        bottom: 90,
+      },
+    }),
+
     alignContent: "center",
     backgroundColor: "transparent",
     paddingHorizontal: 15,
@@ -817,7 +766,6 @@ const styles = StyleSheet.create({
   buttonText: {
     textAlign: "center",
     marginTop: 10,
-    fontWeight: "bold",
     color: "white",
     fontFamily: "Beiruti",
   },
@@ -826,7 +774,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 20,
     textAlign: "center",
-    fontWeight: "800",
     fontFamily: "Beiruti",
   },
   input: {
@@ -858,7 +805,6 @@ const styles = StyleSheet.create({
   },
   submitText: {
     textAlign: "center",
-    fontWeight: "bold",
     color: "white",
     justifyContent: "center",
     fontFamily: "Beiruti",

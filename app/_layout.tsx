@@ -16,6 +16,8 @@ import wallpaperDetails from "./wallpaperDetails";
 import categoryDetails from "./categoryDetails";
 import TabLayout from "./(tabs)/_layout";
 import { FavoritesProvider } from "@/components/favouritesContext";
+/* import mobileAds from "react-native-google-mobile-ads";
+import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency'; */
 
 const MyStack = createStackNavigator();
 
@@ -28,6 +30,17 @@ export default function RootLayout() {
     Beiruti: require("../assets/fonts/Beiruti-Medium.ttf"),
   });
 
+  /* useEffect(() => {
+    (async () => {
+      const { status: trackingStatus } = await requestTrackingPermissionsAsync();
+      if (trackingStatus !== 'granted') {
+        // Do something here such as turn off Sentry tracking, store in context/redux to allow for personalized ads, etc.
+      }
+
+      await mobileAds().initialize();
+    })();
+}, [])
+ */
   useEffect(() => {
     if (loaded) {
       setTimeout(() => SplashScreen.hideAsync(), 5000);

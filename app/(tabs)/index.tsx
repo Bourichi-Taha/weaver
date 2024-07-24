@@ -3,11 +3,12 @@ import {
   Image,
   StyleSheet,
   ScrollView,
+  Platform,
   Dimensions,
   RefreshControl,
+  View,
+  Text,
 } from "react-native";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 import WallpaperCard from "@/components/WallpaperCard";
 import Carousel from "react-native-reanimated-carousel";
 import FastImage from "react-native-fast-image";
@@ -141,20 +142,27 @@ const HomeScreen = () => {
   const cardWidth = width;
 
   return (
-    <ThemedView style={[styles.container]}>
+    <View style={[styles.container]}>
       <SafeAreaView
         style={[styles.backgroundContainer, { backgroundColor: color }]}
       >
         <ScrollView
           style={{
-            paddingTop: insets.top + 100,
+            ...Platform.select({
+              ios: {
+                paddingTop: insets.top + 100,
+              },
+              android: {
+                paddingTop: insets.top + 150,
+              },
+            }),
             flex: 1,
           }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
         >
-          <ThemedView style={styles.cardSlider}>
+          <View style={styles.cardSlider}>
             <Carousel
               style={{
                 width: Dimensions.get("window").width,
@@ -178,11 +186,20 @@ const HomeScreen = () => {
                 />
               )}
             />
-          </ThemedView>
-          <ThemedView
+          </View>
+          <View
             style={[
               styles.cardContainer,
-              { paddingBottom: insets.bottom + 170 },
+              {
+                ...Platform.select({
+                  ios: {
+                    paddingBottom: insets.bottom + 170,
+                  },
+                  android: {
+                    paddingBottom: insets.bottom + 260,
+                  },
+                }),
+              },
             ]}
           >
             {metaData.categories.flatMap((category) =>
@@ -192,6 +209,13 @@ const HomeScreen = () => {
                   index={index}
                   title={category.category}
                   images={[images[image]]}
+                  image={image}
+                  isFavorite={isFavorite({
+                    images: [images[image]],
+                    image: image,
+                    id: index,
+                    category: category.category,
+                  })}
                   style={styles.card}
                   onPress={() =>
                     navigation.navigate("wallpaperDetails", {
@@ -205,18 +229,36 @@ const HomeScreen = () => {
                       key: image,
                     })
                   }
-                  onPressHeart={() =>
-                    handleFavoriteToggle({
-                      images: [images[image]],
-                      image: image,
-                      id: index,
-                      category: category.category,
-                    })
-                  }
+                  onPressHeart={() => {
+                    if (
+                      !isFavorite({
+                        images: [images[image]],
+                        image: image,
+                        id: index,
+                        category: category.category,
+                      })
+                    ) {
+                      addToFavorites({
+                        images: [images[image]],
+                        image: image,
+                        id: index,
+                        category: category.category,
+                      });
+                    } else {
+                      {
+                        removeFromFavorites({
+                          images: [images[image]],
+                          image: image,
+                          id: index,
+                          category: category.category,
+                        });
+                      }
+                    }
+                  }}
                 />
               ))
             )}
-          </ThemedView>
+          </View>
         </ScrollView>
       </SafeAreaView>
 
@@ -225,28 +267,24 @@ const HomeScreen = () => {
         locations={[0, 0.7, 1]}
         style={styles.overlayContainer}
       >
-        <ThemedView style={styles.containerHeader}>
-          <ThemedView style={styles.header}>
-            <ThemedView style={styles.name}>
-              <ThemedText style={[styles.nameText, { color: text }]}>
-                Welcome to
-              </ThemedText>
-              <ThemedText style={[styles.nameTextAppName, { color: nameText }]}>
+        <View style={styles.containerHeader}>
+          <View style={styles.header}>
+            <View style={styles.name}>
+              <Text style={[styles.nameText, { color: text }]}>Welcome to</Text>
+              <Text style={[styles.nameTextAppName, { color: nameText }]}>
                 {metaData.app_name}
-              </ThemedText>
-            </ThemedView>
-            <ThemedView style={styles.icon}>
+              </Text>
+            </View>
+            <View style={styles.icon}>
               <Image source={images[metaData.icon_url]} style={styles.icon} />
-            </ThemedView>
-          </ThemedView>
-          <ThemedView style={styles.titleContainer}>
-            <ThemedText type="title">
-              " Spread love everywhere you go "
-            </ThemedText>
-          </ThemedView>
-        </ThemedView>
+            </View>
+          </View>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>" Every wallpaper, a new story. "</Text>
+          </View>
+        </View>
       </LinearGradient>
-    </ThemedView>
+    </View>
   );
 };
 
@@ -292,7 +330,6 @@ const styles = StyleSheet.create({
   nameText: {
     textAlign: "left",
     paddingVertical: 0,
-    fontWeight: "bold",
     fontSize: 20,
     marginLeft: 0,
     fontFamily: "Beiruti",
@@ -300,7 +337,6 @@ const styles = StyleSheet.create({
   nameTextAppName: {
     textAlign: "left",
     paddingVertical: 0,
-    fontWeight: "500",
     fontSize: 21,
     fontFamily: "Beiruti",
   },
@@ -333,7 +369,12 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingHorizontal: 20,
   },
-  mainContent: {},
+  title: {
+    fontSize: 32,
+    lineHeight: 32,
+    fontFamily: "Rancho",
+    textAlign: "center",
+  },
 });
 
 export default HomeScreen;

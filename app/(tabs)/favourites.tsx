@@ -3,12 +3,12 @@ import {
   Image,
   StyleSheet,
   ScrollView,
+  Platform,
   TouchableOpacity,
   RefreshControl,
   View,
+  Text,
 } from "react-native";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 import WallpaperCard from "@/components/WallpaperCard";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "expo-router";
@@ -38,7 +38,8 @@ const FavouritesScreen = () => {
   const nameText =
     colorScheme === "dark" ? "rgba(255, 255, 255, 1)" : "rgba(0, 0, 0, 1)";
   const navigation = useNavigation();
-  const { favorites, removeFromFavorites, isFavorite } = useFavorites();
+  const { favorites, addToFavorites, removeFromFavorites, isFavorite } =
+    useFavorites();
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -46,14 +47,21 @@ const FavouritesScreen = () => {
   }, []);
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={styles.container}>
       {favorites.length === 0 ? (
         <SafeAreaView
           style={[styles.backgroundContainer, { backgroundColor: color }]}
         >
           <ScrollView
             style={{
-              paddingTop: insets.top + 90,
+              ...Platform.select({
+                ios: {
+                  paddingTop: insets.top + 90,
+                },
+                android: {
+                  paddingTop: insets.top + 140,
+                },
+              }),
               paddingHorizontal: 10,
               alignContent: "center",
               flex: 1,
@@ -62,7 +70,7 @@ const FavouritesScreen = () => {
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
           >
-            <ThemedView style={[{ paddingBottom: insets.bottom + 170 }]}>
+            <View style={[{ paddingBottom: insets.bottom + 170 }]}>
               <View style={styles.emptyCard}>
                 <Image
                   source={require("../../assets/images/icons/icons8-search-for-love-100.png")}
@@ -74,17 +82,15 @@ const FavouritesScreen = () => {
                   }}
                 />
               </View>
-              <ThemedText style={styles.emptyTitle}>
-                No favourites yet
-              </ThemedText>
-              <ThemedText style={styles.suggestionTitle}>
+              <Text style={styles.emptyTitle}>No favourites yet</Text>
+              <Text style={styles.suggestionTitle}>
                 Tap on the heart to add to your favourites!
-              </ThemedText>
-              <ThemedText style={styles.suggestionTitle}>
+              </Text>
+              <Text style={styles.suggestionTitle}>
                 Add wallpapers to your favourites, see them here at a glance.
-              </ThemedText>
+              </Text>
               <TouchableOpacity onPress={() => navigation.navigate("index")}>
-                <ThemedView style={styles.navigationButton}>
+                <View style={styles.navigationButton}>
                   <BlurView intensity={50} style={styles.blurContainer}>
                     <LinearGradient
                       colors={["#FE6292", "#E57373"]}
@@ -92,14 +98,12 @@ const FavouritesScreen = () => {
                       end={{ x: 1, y: 0 }}
                       style={styles.navigationButtonGradient}
                     >
-                      <ThemedText style={styles.navigationButtonText}>
-                        Discover
-                      </ThemedText>
+                      <Text style={styles.navigationButtonText}>Discover</Text>
                     </LinearGradient>
                   </BlurView>
-                </ThemedView>
+                </View>
               </TouchableOpacity>
-            </ThemedView>
+            </View>
           </ScrollView>
         </SafeAreaView>
       ) : (
@@ -108,17 +112,33 @@ const FavouritesScreen = () => {
         >
           <ScrollView
             style={{
-              paddingTop: insets.top + 100,
+              ...Platform.select({
+                ios: {
+                  paddingTop: insets.top + 100,
+                },
+                android: {
+                  paddingTop: insets.top + 150,
+                },
+              }),
               flex: 1,
             }}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
           >
-            <ThemedView
+            <View
               style={[
                 styles.cardContainer,
-                { paddingBottom: insets.bottom + 170 },
+                {
+                  ...Platform.select({
+                    ios: {
+                      paddingBottom: insets.bottom + 170,
+                    },
+                    android: {
+                      paddingBottom: insets.bottom + 260,
+                    },
+                  }),
+                },
               ]}
             >
               {favorites.map((category, index) => (
@@ -127,6 +147,8 @@ const FavouritesScreen = () => {
                   index={index}
                   title={category.category}
                   images={category.images}
+                  image={images[category.image]}
+                  isFavorite={isFavorite(category)}
                   style={styles.card}
                   onPress={() => {
                     navigation.navigate("wallpaperDetails", {
@@ -135,10 +157,16 @@ const FavouritesScreen = () => {
                       key: category.image,
                     });
                   }}
-                  onPressHeart={() => removeFromFavorites(category)}
+                  onPressHeart={() => {
+                    if (isFavorite(category)) {
+                      removeFromFavorites(category);
+                    } else {
+                      addToFavorites(category);
+                    }
+                  }}
                 />
               ))}
-            </ThemedView>
+            </View>
           </ScrollView>
         </SafeAreaView>
       )}
@@ -147,26 +175,32 @@ const FavouritesScreen = () => {
         locations={[0, 0.7, 1]}
         style={styles.overlayContainer}
       >
-        <ThemedView style={styles.containerHeader}>
-          <ThemedView style={styles.header}>
-            <ThemedView style={styles.name}>
-              <ThemedText style={[styles.nameText, { color: text }]}>
-                Welcome to
-              </ThemedText>
-              <ThemedText style={[styles.nameTextAppName, { color: nameText }]}>
+        <View style={styles.containerHeader}>
+          <View style={styles.header}>
+            <View style={styles.name}>
+              <Text style={[styles.nameText, { color: text }]}>Welcome to</Text>
+              <Text style={[styles.nameTextAppName, { color: nameText }]}>
                 {metaData.app_name}
-              </ThemedText>
-            </ThemedView>
-            <ThemedView style={styles.icon}>
+              </Text>
+            </View>
+            <View style={styles.icon}>
               <Image source={images[metaData.icon_url]} style={styles.icon} />
-            </ThemedView>
-          </ThemedView>
-          <ThemedView style={styles.titleContainer}>
-            <ThemedText type="title">" Favourite wallpapers "</ThemedText>
-          </ThemedView>
-        </ThemedView>
+            </View>
+          </View>
+          {favorites.length === 0 ? (
+            <View style={styles.titleContainer}>
+              <Text style={styles.title}> </Text>
+            </View>
+          ) : (
+            <View style={styles.titleContainer}>
+              <Text style={styles.title}>
+                " Your top picks, always at hand. "
+              </Text>
+            </View>
+          )}
+        </View>
       </LinearGradient>
-    </ThemedView>
+    </View>
   );
 };
 
@@ -202,7 +236,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 10,
     textAlign: "center",
-    fontWeight: "800",
   },
   suggestionTitle: {
     fontFamily: "Beiruti",
@@ -240,7 +273,6 @@ const styles = StyleSheet.create({
   nameText: {
     textAlign: "left",
     paddingVertical: 0,
-    fontWeight: "bold",
     fontSize: 20,
     marginLeft: 0,
     fontFamily: "Beiruti",
@@ -248,7 +280,6 @@ const styles = StyleSheet.create({
   nameTextAppName: {
     textAlign: "left",
     paddingVertical: 0,
-    fontWeight: "500",
     fontSize: 21,
     fontFamily: "Beiruti",
   },
@@ -304,6 +335,12 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     paddingVertical: 12,
     paddingHorizontal: 24,
+  },
+  title: {
+    fontSize: 32,
+    lineHeight: 32,
+    fontFamily: "Rancho",
+    textAlign: "center",
   },
 });
 

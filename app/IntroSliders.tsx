@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,13 +8,25 @@ import {
   Dimensions,
 } from "react-native";
 import AppIntroSlider from "react-native-app-intro-slider";
-import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { images } from "../utils/index";
 import metaData from "../db.json";
 
-const slides = [
+const shuffleArray = (array) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
+
+const getRandomImages = () => {
+  const shuffledCarousel = shuffleArray([...metaData.carousel]);
+  return shuffledCarousel.slice(0, 3).map((imageKey) => images[imageKey]);
+};
+
+/* const slides = [
   {
     key: "one",
     title: "Explore Diverse Categories",
@@ -34,13 +46,40 @@ const slides = [
     image: images[metaData.carousel[2]],
   },
 ];
+ */
 
 const windowHeight = Dimensions.get("window").height;
 const windowWidth = Dimensions.get("window").width;
 
 const SlidersScreen = () => {
   const [showRealApp, setShowRealApp] = useState(false);
+  const [slides, setSlides] = useState([]);
   const navigation = useNavigation();
+
+  useEffect(() => {
+    const randomImages = getRandomImages();
+    const newSlides = [
+      {
+        key: "one",
+        title: "Discover Stunning Wallpapers",
+        text: "Browse a diverse collection of  \nhigh-quality images to personalize your device.",
+        image: randomImages[0],
+      },
+      {
+        key: "two",
+        title: "Effortless Customization",
+        text: "Easily preview and set new wallpapers \nwith just a few taps.",
+        image: randomImages[1],
+      },
+      {
+        key: "three",
+        title: "Stay Inspired",
+        text: "Enjoy fresh, curated wallpapers regularly \nto keep your screen looking vibrant and new.",
+        image: randomImages[2],
+      },
+    ];
+    setSlides(newSlides);
+  }, []);
 
   const _renderItem = ({ item }) => {
     return (
@@ -171,13 +210,12 @@ const styles = StyleSheet.create({
   title: {
     marginTop: 10,
     fontSize: 24,
-    fontWeight: "bold",
-    fontFamily: "beiruti",
+    fontFamily: "Beiruti",
   },
   text: {
     textAlign: "center",
     fontSize: 16,
-    fontFamily: "beiruti",
+    fontFamily: "Beiruti",
     color: "gray",
     marginBottom: 100,
   },
@@ -208,7 +246,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#666",
     marginHorizontal: -20,
-    fontFamily: "beiruti",
+    fontFamily: "Beiruti",
   },
 });
 

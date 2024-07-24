@@ -4,6 +4,8 @@ import {
   useColorScheme,
   TouchableOpacity,
   Image,
+  View,
+  Text,
 } from "react-native";
 import Animated, {
   interpolate,
@@ -12,10 +14,7 @@ import Animated, {
   useScrollViewOffset,
 } from "react-native-reanimated";
 import { BlurView } from "expo-blur";
-ThemedText;
-import { ThemedView } from "@/components/ThemedView";
 import { LinearGradient } from "expo-linear-gradient";
-import { ThemedText } from "./ThemedText";
 
 const HEADER_HEIGHT = 500;
 
@@ -59,7 +58,7 @@ export default function ParallaxScroll({
   });
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={styles.container}>
       <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16}>
         <Animated.View
           style={[
@@ -71,7 +70,7 @@ export default function ParallaxScroll({
           {headerImage}
         </Animated.View>
       </Animated.ScrollView>
-      <ThemedView style={styles.buttonsContainer}>
+      <View style={styles.buttonsContainer}>
         <BlurView tint={blurTint} intensity={100} style={styles.blurContainer}>
           <TouchableOpacity
             style={styles.optionButton}
@@ -94,9 +93,9 @@ export default function ParallaxScroll({
                 }}
               />
             </LinearGradient>
-            <ThemedText style={[styles.optionText, { color: themedTintColor }]}>
+            <Text style={[styles.optionText, { color: themedTintColor }]}>
               Save
-            </ThemedText>
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.optionButton}
@@ -120,9 +119,9 @@ export default function ParallaxScroll({
               />
             </LinearGradient>
 
-            <ThemedText style={[styles.optionText, { color: themedTintColor }]}>
+            <Text style={[styles.optionText, { color: themedTintColor }]}>
               Apply
-            </ThemedText>
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.optionButton}
@@ -146,13 +145,13 @@ export default function ParallaxScroll({
               />
             </LinearGradient>
 
-            <ThemedText style={[styles.optionText, { color: themedTintColor }]}>
+            <Text style={[styles.optionText, { color: themedTintColor }]}>
               Share
-            </ThemedText>
+            </Text>
           </TouchableOpacity>
         </BlurView>
-      </ThemedView>
-    </ThemedView>
+      </View>
+    </View>
   );
 }
 
