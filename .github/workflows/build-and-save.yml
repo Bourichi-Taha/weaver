@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
+      - name: Prebuild app
+        run: npx expo prebuild
+
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
