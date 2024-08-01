@@ -1,0 +1,69 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install essential utilities
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y coreutils findutils unzip wget
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          
+      - name: Setup Android SDK Tools
+        uses: android-actions/setup-android@v3.2.1
+
+      - name: Grant execution permissions for Gradle wrapper
+        run: sudo chmod +x ./android/gradlew
+
+      - name: Create gradlew wrapper script
+        run: |
+          cd android
+          echo '#!/bin/bash' > run_gradlew.sh
+          echo 'export PATH=/usr/bin:$PATH' >> run_gradlew.sh
+          echo './gradlew "$@"' >> run_gradlew.sh
+          chmod +x run_gradlew.sh
+          
+      - name: Build React Native app
+        run: |
+          cd android
+          ./run_gradlew.sh assembleRelease
+
+      - name: Archive APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release.apk 
+          path: android/app/build/outputs/apk/release/app-release.apk
+
+
+      - name: Commit and push APK to repo
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git checkout -b apks # Ensure we're on a new branch
+          cp android/app/build/outputs/apk/release/app-release.apk ./apks/app-release-$(date +'%Y%m%d%H%M%S').apk
+          git add ./apks/
+          git commit -m "Add APK from build ${{ github.run_id }}"
+          git push origin apks
