@@ -66,6 +66,7 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git checkout -b apks # Ensure we're on a new branch
+          mkdir -p ./apks # Create the directory if it doesn't exist
           cp android/app/build/outputs/apk/release/app-release.apk ./apks/app-release-$(date +'%Y%m%d%H%M%S').apk
           git add ./apks/
           git commit -m "Add APK from build ${{ github.run_id }}"
