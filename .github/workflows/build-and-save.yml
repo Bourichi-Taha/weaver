@@ -21,8 +21,17 @@ jobs:
       - name: Install essential utilities
         run: |
           sudo apt-get update
-          sudo apt-get install -y coreutils findutils unzip wget
-
+          sudo apt-get install -y wget
+      - name: Cache Node.js modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.yarn/cache
+            node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      
       - name: Install dependencies
         run: yarn install
 
@@ -34,6 +43,12 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+
+      - name: Cache Android SDK
+        uses: actions/cache@v3
+        with:
+          path: ${{ runner.temp }}/android-sdk
+          key: ${{ runner.os }}-android-sdk
           
       - name: Setup Android SDK Tools
         uses: android-actions/setup-android@v3.2.1
