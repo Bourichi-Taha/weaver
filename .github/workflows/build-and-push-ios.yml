@@ -60,8 +60,8 @@ jobs:
           DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
         run: |
           cd ios
-          xcodebuild -workspace "cicd.xcworkspace" \
-            -scheme cicd \
+          xcodebuild -workspace "WeaverTheme.xcworkspace" \
+            -scheme WeaverTheme \
             -configuration Debug \
             -sdk iphonesimulator \
             -derivedDataPath build \
@@ -71,7 +71,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ios_app_artifact
-          path: ios/build/Build/Products/Debug-iphonesimulator/cicd.app
+          path: ios/build/Build/Products/Debug-iphonesimulator/WeaverTheme.app
 
   build_and_push_docker:
     runs-on: ubuntu-latest
@@ -85,7 +85,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ios_app_artifact
-          path: ios/archive/cicd.app
+          path: ios/archive/WeaverTheme.app
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
