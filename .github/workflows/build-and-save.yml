@@ -3,7 +3,7 @@ name: Build and Save to repo
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build:
@@ -49,7 +49,7 @@ jobs:
         with:
           path: ${{ runner.temp }}/android-sdk
           key: ${{ runner.os }}-android-sdk
-          
+
       - name: Setup Android SDK Tools
         uses: android-actions/setup-android@v3.2.1
 
