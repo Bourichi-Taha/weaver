@@ -69,7 +69,7 @@ jobs:
       - name: Prepare key-store
         run: |
           cd android/app
-          keytool -genkey -v -keystore ${{ github.event.client_payload.keystoreName }} -alias ${{ github.event.client_payload.alias }} -keyalg RSA -keysize 2048 -validity 10000 -storepass ${{ github.event.client_payload.storepass }} -keypass ${{ github.event.client_payload.keypass }} -dname ${{ github.event.client_payload.dname }}
+          keytool -genkey -v -keystore ${{ github.event.client_payload.keystoreName }} -alias ${{ github.event.client_payload.alias }} -keyalg RSA -keysize 2048 -validity 10000 -storepass ${{ github.event.client_payload.keypass }} -keypass ${{ github.event.client_payload.keypass }} -dname ${{ github.event.client_payload.dname }}
 
       - name: Grant execution permissions for Gradle wrapper
         run: sudo chmod +x ./android/gradlew
@@ -118,7 +118,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          script: mkdir -p /var/www/user_mobtwin/generated/userId/appId/android
+          script: mkdir -p /var/www/user_mobtwin/generated/${{ github.event.client_payload.userId }}/${{ github.event.client_payload.appId }}/android
       - name: Transfer apk to server
         uses: appleboy/scp-action@master
         with:
@@ -127,7 +127,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           source: "app-arm64-v8a-release.apk"
-          target: "/var/www/user_mobtwin/generated/userId/appId/android"
+          target: "/var/www/user_mobtwin/generated/${{ github.event.client_payload.userId }}/${{ github.event.client_payload.appId }}/android"
       - name: Transfer aab to server
         uses: appleboy/scp-action@master
         with:
@@ -136,7 +136,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           source: "app-release.aab"
-          target: "/var/www/user_mobtwin/generated/userId/appId/android"
+          target: "/var/www/user_mobtwin/generated/${{ github.event.client_payload.userId }}/${{ github.event.client_payload.appId }}/android"
       - name: Transfer keystore to server
         uses: appleboy/scp-action@master
         with:
@@ -145,7 +145,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           source: ${{ github.event.client_payload.keystoreName }}
-          target: "/var/www/user_mobtwin/generated/userId/appId/android"
+          target: /var/www/user_mobtwin/generated/${{ github.event.client_payload.userId }}/${{ github.event.client_payload.appId }}/android
       # - name: Archive AAB  
       #   uses: actions/upload-artifact@v3
       #   with:
