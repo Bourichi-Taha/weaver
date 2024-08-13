@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn install
-        
+
       - name: Adding user Config to application
         run: node -r ts-node/register scripts/build.ts
         env:
@@ -82,7 +82,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          script: mkdir -p /var/www/user_mobtwin/generated/userId/appId/ios
+          script: mkdir -p /var/www/user_mobtwin/generated/${{ github.event.client_payload.userId }}/${{ github.event.client_payload.appId }}/ios
       - name: Transfer ios to server
         uses: appleboy/scp-action@master
         with:
@@ -91,6 +91,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           source: "ios_app.zip"
-          target: "/var/www/user_mobtwin/generated/userId/appId/ios"
+          target: "/var/www/user_mobtwin/generated/${{ github.event.client_payload.userId }}/${{ github.event.client_payload.appId }}/ios"
 
 
