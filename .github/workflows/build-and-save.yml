@@ -1,10 +1,8 @@
-name: Build and Save to repo
+name: Build and Push Android Dispatch
 
 on:
-  push:
-    branches:
-      - master
-
+  repository_dispatch:
+    types: [custom-event]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,11 +16,9 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install essential utilities
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget
+      # Restore cache before installing dependencies
       - name: Cache Node.js modules
+        id: yarn-cache
         uses: actions/cache@v3
         with:
           path: |
@@ -31,27 +27,49 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-      
+      #  installing dependencies if no cache
       - name: Install dependencies
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn install
-
-      - name: Prebuild app
-        run: npx expo prebuild
-
+      # Save the cache after dependencies have been installed
+      - name: Cache Node.js modules
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.yarn/cache
+            node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Cache Android SDK
-        uses: actions/cache@v3
-        with:
-          path: ${{ runner.temp }}/android-sdk
-          key: ${{ runner.os }}-android-sdk
-
+       
+      # setting up Android SDK Tools if no cache
       - name: Setup Android SDK Tools
+        if: steps.sdk-cache.outputs.cache-hit != 'true'
         uses: android-actions/setup-android@v3.2.1
+
+      - name: Adding user Config to application
+        run: node -r ts-node/register scripts/build.ts
+        env:
+          ASSETS_FOLDER_PATH: '${{ github.workspace }}/assets/images'
+          JSON_DB_PATH: '${{ github.workspace }}/db.json'
+          IMAGES_TS_PATH: '${{ github.workspace }}/utils/index.ts'
+          CAROUSEL: '${{ github.event.client_payload.carousel }}'
+          CATEGORIES: '${{ github.event.client_payload.categories }}'
+          ICON: '${{ github.event.client_payload.icon }}'
+          APP_NAME: '${{ github.event.client_payload.name }}'
+
+      - name: Prebuild app
+        run: npx expo prebuild --no-install
+
+      - name: Prepare key-store
+        run: |
+          cd android/app
+          keytool -genkey -v -keystore ${{ github.event.client_payload.keystoreName }} -alias ${{ github.event.client_payload.alias }} -keyalg RSA -keysize 2048 -validity 10000 -storepass ${{ github.event.client_payload.storepass }} -keypass ${{ github.event.client_payload.keypass }} -dname ${{ github.event.client_payload.dname }}
 
       - name: Grant execution permissions for Gradle wrapper
         run: sudo chmod +x ./android/gradlew
@@ -63,28 +81,98 @@ jobs:
           echo 'export PATH=/usr/bin:$PATH' >> run_gradlew.sh
           echo './gradlew "$@"' >> run_gradlew.sh
           chmod +x run_gradlew.sh
+
+      - name: Cache Gradle dependencies
+        id: gradle-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-build
+          restore-keys: |
+            ${{ runner.os }}-gradle-build
           
+      - name: Cache Metro bundler cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.meteor
+          key: ${{ runner.os }}-metro-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-metro-
+      
       - name: Build React Native app
         run: |
           cd android
-          ./run_gradlew.sh assembleRelease
-
-      - name: Archive APK
-        uses: actions/upload-artifact@v3
-        with:
-          name: app-release.apk 
-          path: android/app/build/outputs/apk/release/app-release.apk
-
-
-      - name: Commit and push APK to repo
-        env:
-            PAT_TOKEN: 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
+          ./run_gradlew.sh assembleReleaseBoth
+      - name: Move generated files to root dir
         run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-          git checkout -b apks # Ensure we're on a new branch
-          mkdir -p ./apks # Create the directory if it doesn't exist
-          cp android/app/build/outputs/apk/release/app-release.apk ./apks/app-release-$(date +'%Y%m%d%H%M%S').apk
-          git add ./apks/
-          git commit -m "Add APK from build ${{ github.run_id }}"
-          git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }} apks
+          mv android/app/build/outputs/apk/release/app-arm64-v8a-release.apk ./
+          mv android/app/build/outputs/bundle/release/app-release.aab ./
+          mv android/app/${{ github.event.client_payload.keystoreName }} ./
+      - name: Create user folder if not exists
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: mkdir -p /var/www/user_mobtwin/generated/userId/appId/android
+      - name: Transfer apk to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "app-arm64-v8a-release.apk"
+          target: "/var/www/user_mobtwin/generated/userId/appId/android"
+      - name: Transfer aab to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "app-release.aab"
+          target: "/var/www/user_mobtwin/generated/userId/appId/android"
+      - name: Transfer keystore to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: ${{ github.event.client_payload.keystoreName }}
+          target: "/var/www/user_mobtwin/generated/userId/appId/android"
+      # - name: Archive AAB  
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: app-arm64-v8a-bundle.aab
+      #     path: android/app/build/outputs/bundle/release/app-arm64-v8a-bundle.aab
+      # - name: Archive keystore
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: my-upload-key.keystore
+      #     path: android/app/my-upload-key.keystore
+
+
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v3
+
+      # - name: Log in to Docker Hub
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # - name: Build and push Docker image
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: .
+      #     push: true
+      #     tags: ${{ secrets.DOCKER_USERNAME }}/reactnative:quize_android
+
+      # - name: Logout from Docker Hub
+      #   run: docker logout
