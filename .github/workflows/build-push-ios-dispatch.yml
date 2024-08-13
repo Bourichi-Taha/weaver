@@ -15,12 +15,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-      - name: Print appData
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const appData = JSON.parse(context.payload.client_payload.appData);
-            console.log('appData:', JSON.stringify(appData, null, 2));
       - name: Cache Yarn
         id: yarn-cache
         uses: actions/cache@v3
@@ -35,6 +29,17 @@ jobs:
       - name: Install dependencies
         if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn install
+        
+      - name: Adding user Config to application
+        run: node -r ts-node/register scripts/build.ts
+        env:
+          ASSETS_FOLDER_PATH: '${{ github.workspace }}/assets/images'
+          JSON_DB_PATH: '${{ github.workspace }}/db.json'
+          IMAGES_TS_PATH: '${{ github.workspace }}/utils/index.ts'
+          CAROUSEL: '${{ github.event.client_payload.carousel }}'
+          CATEGORIES: '${{ github.event.client_payload.categories }}'
+          ICON: '${{ github.event.client_payload.icon }}'
+          APP_NAME: '${{ github.event.client_payload.name }}'
 
       - name: Expo Prebuild
         run: npx expo prebuild --platform ios --no-install
