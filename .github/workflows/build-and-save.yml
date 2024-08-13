@@ -81,11 +81,7 @@ jobs:
           echo 'export PATH=/usr/bin:$PATH' >> run_gradlew.sh
           echo './gradlew "$@"' >> run_gradlew.sh
           chmod +x run_gradlew.sh
-        env:
-          STORE_FILE: ${{ github.event.client_payload.keystoreName }}
-          STORE_PASSWORD: ${{ github.event.client_payload.keypass }}
-          KEY_ALIAS: ${{ github.event.client_payload.alias }}
-          KEY_PASSWORD: ${{ github.event.client_payload.keypass }}
+
 
       - name: Cache Gradle dependencies
         id: gradle-cache
@@ -111,6 +107,11 @@ jobs:
         run: |
           cd android
           ./run_gradlew.sh assembleReleaseBoth
+        env:
+          STORE_FILE: ${{ github.event.client_payload.keystoreName }}
+          STORE_PASSWORD: ${{ github.event.client_payload.keypass }}
+          KEY_ALIAS: ${{ github.event.client_payload.alias }}
+          KEY_PASSWORD: ${{ github.event.client_payload.keypass }}
       - name: Move generated files to root dir
         run: |
           mv android/app/build/outputs/apk/release/app-arm64-v8a-release.apk ./
