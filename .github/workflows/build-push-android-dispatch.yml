@@ -62,6 +62,9 @@ jobs:
           CATEGORIES: '${{ github.event.client_payload.categories }}'
           ICON: '${{ github.event.client_payload.icon }}'
           APP_NAME: '${{ github.event.client_payload.name }}'
+          APP_PACKAGE_NAME: '${{ github.event.client_payload.package }}'
+          APP_JSON_PATH: '${{ github.workspace }}/app.json'
+          KEY_STORE_NAME: '${{ github.event.client_payload.keystoreName }}'
 
       - name: Prebuild app
         run: npx expo prebuild --no-install

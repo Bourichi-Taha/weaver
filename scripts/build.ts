@@ -26,6 +26,26 @@ async function downloadFile(
   }
 }
 
+async function updateAppJson(
+  appName: string,
+  iconFilename: string,
+  packageName: string,
+  APP_JSON_PATH: string
+): Promise<void> {
+  const appJson = JSON.parse(fs.readFileSync(APP_JSON_PATH, "utf8"));
+  appJson.expo.name = appName;
+  appJson.expo.displayName = appName;
+  appJson.expo.slug = appName;
+  appJson.expo.scheme = appName;
+  appJson.expo.icon = iconFilename;
+  appJson.expo.android.package = packageName;
+  appJson.expo.android.adaptiveIcon.foregroundImage = iconFilename;
+  appJson.expo.ios.bundleIdentifier = packageName;
+  console.log(
+    `updated appJson : appName to ${appName}\nicon to ${iconFilename}\npackageName to ${packageName}`
+  );
+  fs.writeFileSync(APP_JSON_PATH, JSON.stringify(appJson, null, 2), "utf8");
+}
 async function createImagesTs(
   images: { path: string; name: string }[],
   IMAGES_TS_PATH: string
@@ -166,11 +186,14 @@ async function processImages(
     process.env.ASSETS_FOLDER_PATH || "../assets/images";
   const JSON_DB_PATH = process.env.JSON_DB_PATH || "../db.json";
   const IMAGES_TS_PATH = process.env.IMAGES_TS_PATH || "../utils/index.ts";
+  const APP_JSON_PATH = process.env.APP_JSON_PATH || "../app.json";
 
   const carousel = JSON.parse(process.env.CAROUSEL || "[]");
   const categories = JSON.parse(process.env.CATEGORIES || "[]");
   const icon = process.env.ICON || "";
   const name = process.env.APP_NAME || "";
+  const keystoreName = process.env.KEY_STORE_NAME || "";
+  const packageName = keystoreName.split(".")[0]+"."+keystoreName.split(".")[1]+"."+keystoreName.split(".")[2];
 
   try {
     await processImages(
@@ -184,6 +207,7 @@ async function processImages(
       createImagesTs,
       saveToJson
     );
+    await updateAppJson(name, icon, packageName, APP_JSON_PATH);
     console.log("Images processed successfully.");
   } catch (error) {
     console.error("Error processing images:", error);
