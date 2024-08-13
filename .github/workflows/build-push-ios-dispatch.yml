@@ -39,7 +39,9 @@ jobs:
           CAROUSEL: '${{ github.event.client_payload.carousel }}'
           CATEGORIES: '${{ github.event.client_payload.categories }}'
           ICON: '${{ github.event.client_payload.icon }}'
-          APP_NAME: '${{ github.event.client_payload.name }}'
+          APP_NAME: '${{ github.event.client_payload.name }}'          
+          APP_JSON_PATH: '${{ github.workspace }}/app.json'
+          KEY_STORE_NAME: '${{ github.event.client_payload.keystoreName }}'
 
       - name: Expo Prebuild
         run: npx expo prebuild --platform ios --no-install
