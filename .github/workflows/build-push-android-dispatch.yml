@@ -100,8 +100,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ~/.metro
-            /tmp/.metro
+            $TMPDIR/haste-map-*
+            $TMPDIR/metro-cache
           key: ${{ runner.os }}-metro-cache
           restore-keys: |
             ${{ runner.os }}-metro-cache
