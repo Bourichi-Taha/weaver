@@ -69,7 +69,7 @@ jobs:
       - name: Prepare key-store
         run: |
           cd android/app
-          keytool -genkey -v -keystore ${{ github.event.client_payload.keystoreName }} -alias ${{ github.event.client_payload.alias }} -keyalg RSA -keysize 2048 -validity 10000 -storepass "${{ github.event.client_payload.keypass }}" -keypass "${{ github.event.client_payload.keypass }}" -dname ${{ github.event.client_payload.dname }}
+          keytool -genkey -v -keystore ${{ github.event.client_payload.keystoreName }} -alias ${{ github.event.client_payload.alias }} -keyalg RSA -keysize 2048 -validity 10000 -storepass "${{ github.event.client_payload.keypass }}" -keypass "${{ github.event.client_payload.keypass }}" -dname "${{ github.event.client_payload.dname }}""
 
       - name: Grant execution permissions for Gradle wrapper
         run: sudo chmod +x ./android/gradlew
