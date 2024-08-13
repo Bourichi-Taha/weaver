@@ -94,14 +94,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-build
           
-      - name: Cache Metro bundler cache
+      - name: Cache Metro Bundler
         uses: actions/cache@v3
         with:
-          path: |
-            ~/.meteor
-          key: ${{ runner.os }}-metro-${{ hashFiles('**/package.json') }}
+          path: ~/.metro
+          key: ${{ runner.os }}-metro-cache
           restore-keys: |
-            ${{ runner.os }}-metro-
+            ${{ runner.os }}-metro-cache
       
       - name: Build React Native app
         run: |

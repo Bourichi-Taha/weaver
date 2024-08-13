@@ -1,0 +1,91 @@
+name: Build and Push iOS Dispatch
+
+on:
+  repository_dispatch:
+    types: [custom-event]
+
+jobs:
+  build_ios:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Print appData
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const appData = JSON.parse(context.payload.client_payload.appData);
+            console.log('appData:', JSON.stringify(appData, null, 2));
+      - name: Cache Yarn
+        id: yarn-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.yarn/cache
+            node_modules 
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install dependencies
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn install
+
+      - name: Expo Prebuild
+        run: npx expo prebuild --platform ios --no-install
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v2
+        with:
+          path: ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Install CocoaPods 
+        run: |
+          cd ios
+          pod install
+      - name: Zip iOS folder
+        run: zip -r ios_app.zip ios
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios_app
+          path: ios_app.zip
+  transfer_to_server:
+    needs: build_ios
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ios_app
+          path: ios_app
+      - name: Move zip to root dir
+        run: mv ./ios_app/ios_app.zip ./
+      - name: Create user folder if not exists
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: mkdir -p /var/www/user_mobtwin/generated/userId/appId/ios
+      - name: Transfer ios to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "ios_app.zip"
+          target: "/var/www/user_mobtwin/generated/userId/appId/ios"
+
+
