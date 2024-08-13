@@ -170,7 +170,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          source: images.ts
+          source: index.ts
           target: /var/www/user_mobtwin/generated/${{ github.event.client_payload.userId }}/${{ github.event.client_payload.appId }}/android
       # - name: Archive AAB  
       #   uses: actions/upload-artifact@v3
