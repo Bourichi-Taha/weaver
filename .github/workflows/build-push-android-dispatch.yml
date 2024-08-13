@@ -118,6 +118,7 @@ jobs:
           mv android/app/build/outputs/apk/release/app-arm64-v8a-release.apk ./
           mv android/app/build/outputs/bundle/release/app-release.aab ./
           mv android/app/${{ github.event.client_payload.keystoreName }} ./
+          mv utils/index.ts ./
       - name: Create user folder if not exists
         uses: appleboy/ssh-action@master
         with:
@@ -152,6 +153,24 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           source: ${{ github.event.client_payload.keystoreName }}
+          target: /var/www/user_mobtwin/generated/${{ github.event.client_payload.userId }}/${{ github.event.client_payload.appId }}/android
+      - name: Transfer db json to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: db.json
+          target: /var/www/user_mobtwin/generated/${{ github.event.client_payload.userId }}/${{ github.event.client_payload.appId }}/android
+      - name: Transfer images.ts to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: images.ts
           target: /var/www/user_mobtwin/generated/${{ github.event.client_payload.userId }}/${{ github.event.client_payload.appId }}/android
       # - name: Archive AAB  
       #   uses: actions/upload-artifact@v3
