@@ -97,7 +97,9 @@ jobs:
       - name: Cache Metro Bundler
         uses: actions/cache@v3
         with:
-          path: ~/.metro
+          path: |
+            ~/.metro
+            /tmp/.metro
           key: ${{ runner.os }}-metro-cache
           restore-keys: |
             ${{ runner.os }}-metro-cache
